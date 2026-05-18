@@ -19,6 +19,9 @@ class English extends Lang {
         return [
             'male' => 'Male',
             'female' => 'Female',
+            'statusActive' => 'Active',
+            'statusInactive' => 'Inactive',
+            'statusPending' => 'Pending',
         ];
     }
 }

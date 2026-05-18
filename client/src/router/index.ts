@@ -1,33 +1,127 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '@/views/HomeView.vue'
-import LoginView from '@/views/LoginView.vue'
-import Cookies from 'js-cookie'
+import { useAuthStore } from '@/store/authStore'
+import type { UserRole } from '@/types/roleTypes'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
-      name: 'home',
-      component: HomeView,
-      meta: { requiresAuth: true },
+      component: () => import('@/layouts/PublicLayout.vue'),
+      children: [
+        {
+          path: '',
+          name: 'home',
+          component: () => import('@/views/HomeView.vue'),
+          meta: { requiresAuth: false, roles: ['guest'] },
+        },
+        {
+          path: 'login',
+          name: 'login',
+          component: () => import('@/views/LoginView.vue'),
+          meta: { requiresAuth: false, roles: ['guest'] },
+        },
+        {
+          path: 'register',
+          name: 'register',
+          component: () => import('@/views/RegisterView.vue'),
+          meta: { requiresAuth: false, roles: ['guest'] },
+        },
+        {
+          path: 'forbidden',
+          name: 'forbidden',
+          component: () => import('@/views/ForbiddenView.vue'),
+          meta: { requiresAuth: false, roles: ['guest'] },
+        },
+      ],
     },
     {
-      path: '/login',
-      name: 'login',
-      component: LoginView,
+      path: '/admin',
+      component: () => import('@/layouts/AdminLayout.vue'),
+      meta: { requiresAuth: true, roles: ['admin'] },
+      children: [
+        {
+          path: '',
+          name: 'admin-dashboard',
+          component: () => import('@/views/AdminDashboardView.vue'),
+          meta: { requiresAuth: true, roles: ['admin'] },
+        },
+      ],
+    },
+    {
+      path: '/app',
+      component: () => import('@/layouts/UserLayout.vue'),
+      meta: { requiresAuth: true, roles: ['user'] },
+      children: [
+        {
+          path: '',
+          name: 'user-dashboard',
+          component: () => import('@/views/UserDashboardView.vue'),
+          meta: { requiresAuth: true, roles: ['user'] },
+        },
+        {
+          path: 'memberships',
+          name: 'membership-types',
+          component: () => import('@/views/MembershipTypesView.vue'),
+          meta: { requiresAuth: true, roles: ['user'] },
+        },
+        {
+          path: 'members',
+          name: 'members-list',
+          component: () => import('@/views/MembersListView.vue'),
+          meta: { requiresAuth: true, roles: ['user'] },
+        },
+        {
+          path: 'members/new',
+          name: 'member-create',
+          component: () => import('@/views/MemberCreateView.vue'),
+          meta: { requiresAuth: true, roles: ['user'] },
+        },
+        {
+          path: 'members/expiring',
+          name: 'members-expiring',
+          component: () => import('@/views/MembersExpiringView.vue'),
+          meta: { requiresAuth: true, roles: ['user'] },
+        },
+      ],
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'not-found',
+      component: () => import('@/views/NotFoundView.vue'),
+      meta: { requiresAuth: false, roles: ['guest'] },
     },
   ],
+  scrollBehavior(to) {
+    if (to.hash) {
+      return { el: to.hash, behavior: 'smooth' }
+    }
+    return { top: 0 }
+  },
 })
 
-router.beforeEach((to) => {
-  // Read token directly from cookie — avoids Pinia initialization order issue
-  const token = Cookies.get('access_token')
-  if (to.meta.requiresAuth && !token) {
+router.beforeEach(async (to) => {
+  const authStore = useAuthStore()
+  await authStore.initialize()
+
+  const requiresAuth = to.matched.some((record) => record.meta.requiresAuth)
+  const requiredRoles = to.matched.flatMap((record) => record.meta.roles as UserRole[] | undefined)
+
+  if (!requiresAuth && requiredRoles.includes('guest') && authStore.isAuthenticated) {
+    if (authStore.userRole === 'admin') {
+      return { name: 'admin-dashboard' }
+    }
+
+    return { name: 'user-dashboard' }
+  }
+
+  if (requiresAuth && !authStore.isAuthenticated) {
     return { name: 'login' }
   }
-  if (to.name === 'login' && token) {
-    return { name: 'home' }
+
+  const authRoles = requiredRoles.filter(Boolean) as UserRole[]
+  if (requiresAuth && authRoles.length > 0 && !authRoles.includes(authStore.userRole)) {
+    return { name: 'forbidden' }
   }
 })
 

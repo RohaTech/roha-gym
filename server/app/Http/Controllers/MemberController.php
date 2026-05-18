@@ -1,0 +1,257 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Member;
+use App\Models\MembershipType;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Translation\Message;
+
+class MemberController extends Controller
+{
+    /**
+     * Display a listing of members for the authenticated gym.
+     */
+    public function index(Request $request): JsonResponse
+    {
+        $gymId = $request->user()->id;
+
+        $query = Member::where('gym_id', $gymId)
+            ->with('membershipType:id,name,duration_days');
+
+        // Filter by status
+        if ($request->has('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Search by name or phone
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('full_name', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%")
+                    ->orWhere('unique_code', 'like', "%{$search}%");
+            });
+        }
+
+        $members = $query->orderBy('created_at', 'desc')->get();
+
+        return response()->json($members);
+    }
+
+    /**
+     * Get members expiring soon (within 7 days).
+     */
+    public function expiring(Request $request): JsonResponse
+    {
+        $gymId = $request->user()->id;
+        $daysAhead = $request->input('days', 7);
+
+        $members = Member::where('gym_id', $gymId)
+            ->where('status', 'active')
+            ->whereBetween('expiry_date', [
+                now()->toDateString(),
+                now()->addDays($daysAhead)->toDateString(),
+            ])
+            ->with('membershipType:id,name,duration_days')
+            ->orderBy('expiry_date', 'asc')
+            ->get();
+
+        return response()->json($members);
+    }
+
+    /**
+     * Store a newly created member.
+     */
+    public function store(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'full_name' => 'required|string|max:255',
+            'phone' => 'required|string|max:20',
+            'membership_type_id' => 'required|exists:membership_types,id',
+            'start_date' => 'required|date',
+            'gender' => 'nullable|in:male,female,other',
+            'notes' => 'nullable|string|max:1000',
+            'photo' => 'nullable|image|mimes:jpeg,png,webp|max:2048',
+        ]);
+
+        $gymId = $request->user()->id;
+
+        // Verify membership type belongs to this gym
+        $membershipType = MembershipType::where('id', $validated['membership_type_id'])
+            ->where('gym_id', $gymId)
+            ->firstOrFail();
+
+        // Calculate expiry date - ensure duration_days is an integer
+        $startDate = \Carbon\Carbon::parse($validated['start_date']);
+        $durationDays = intval($membershipType->duration_days);
+        $expiryDate = $startDate->copy()->addDays($durationDays);
+
+        // Handle photo upload
+        $photoPath = null;
+        if ($request->hasFile('photo')) {
+            $photoPath = $request->file('photo')->store('members', 'public');
+        }
+
+        // Generate unique code (5 characters)
+        $uniqueCode = $this->generateUniqueCode();
+
+        // Generate slug
+        $slug = Str::slug($validated['full_name']) . '-' . Str::random(6);
+
+        $member = Member::create([
+            'gym_id' => $gymId,
+            'membership_type_id' => $validated['membership_type_id'],
+            'slug' => $slug,
+            'unique_code' => $uniqueCode,
+            'full_name' => $validated['full_name'],
+            'phone' => $validated['phone'],
+            'photo_path' => $photoPath,
+            'gender' => $validated['gender'] ?? null,
+            'start_date' => $validated['start_date'],
+            'expiry_date' => $expiryDate->toDateString(),
+            'status' => 'active',
+            'notes' => $validated['notes'] ?? null,
+        ]);
+
+        $member->load('membershipType:id,name,duration_days');
+
+        return response()->json([
+            'message' => Message::get('member_created'),
+            'data' => $member,
+        ], 201);
+    }
+
+    /**
+     * Display the specified member.
+     */
+    public function show(Request $request, int $id): JsonResponse
+    {
+        $member = Member::where('gym_id', $request->user()->id)
+            ->with('membershipType:id,name,duration_days')
+            ->findOrFail($id);
+
+        return response()->json($member);
+    }
+
+    /**
+     * Update the specified member.
+     */
+    public function update(Request $request, int $id): JsonResponse
+    {
+        $member = Member::where('gym_id', $request->user()->id)
+            ->findOrFail($id);
+
+        $validated = $request->validate([
+            'full_name' => 'sometimes|required|string|max:255',
+            'phone' => 'sometimes|required|string|max:20',
+            'membership_type_id' => 'sometimes|required|exists:membership_types,id',
+            'start_date' => 'sometimes|required|date',
+            'gender' => 'nullable|in:male,female,other',
+            'status' => 'sometimes|in:active,expired,suspended',
+            'notes' => 'nullable|string|max:1000',
+            'photo' => 'nullable|image|mimes:jpeg,png,webp|max:2048',
+        ]);
+
+        $gymId = $request->user()->id;
+
+        // If membership type changed, verify it belongs to this gym and recalculate expiry
+        if (isset($validated['membership_type_id'])) {
+            $membershipType = MembershipType::where('id', $validated['membership_type_id'])
+                ->where('gym_id', $gymId)
+                ->firstOrFail();
+
+            $startDate = isset($validated['start_date'])
+                ? \Carbon\Carbon::parse($validated['start_date'])
+                : \Carbon\Carbon::parse($member->start_date);
+
+            $durationDays = intval($membershipType->duration_days);
+            $validated['expiry_date'] = $startDate->copy()
+                ->addDays($durationDays)
+                ->toDateString();
+        } elseif (isset($validated['start_date'])) {
+            // If only start date changed, recalculate expiry with existing membership type
+            $member->load('membershipType');
+            $startDate = \Carbon\Carbon::parse($validated['start_date']);
+            $durationDays = intval($member->membershipType->duration_days);
+            $validated['expiry_date'] = $startDate->copy()
+                ->addDays($durationDays)
+                ->toDateString();
+        }
+
+        // Handle photo upload
+        if ($request->hasFile('photo')) {
+            // Delete old photo if exists
+            if ($member->photo_path) {
+                \Storage::disk('public')->delete($member->photo_path);
+            }
+            $validated['photo_path'] = $request->file('photo')->store('members', 'public');
+        }
+
+        $member->update($validated);
+        $member->load('membershipType:id,name,duration_days');
+
+        return response()->json([
+            'message' => Message::get('member_updated'),
+            'data' => $member,
+        ]);
+    }
+
+    /**
+     * Remove the specified member.
+     */
+    public function destroy(Request $request, int $id): JsonResponse
+    {
+        $member = Member::where('gym_id', $request->user()->id)
+            ->findOrFail($id);
+
+        // Delete photo if exists
+        if ($member->photo_path) {
+            \Storage::disk('public')->delete($member->photo_path);
+        }
+
+        $member->delete();
+
+        return response()->json([
+            'message' => Message::get('member_deleted'),
+        ]);
+    }
+
+    /**
+     * Generate a unique 5-character code.
+     */
+    private function generateUniqueCode(): string
+    {
+        do {
+            $code = strtoupper(Str::random(5));
+        } while (Member::where('unique_code', $code)->exists());
+
+        return $code;
+    }
+
+    /**
+     * Get member statistics.
+     */
+    public function stats(Request $request): JsonResponse
+    {
+        $gymId = $request->user()->id;
+
+        $stats = [
+            'total' => Member::where('gym_id', $gymId)->count(),
+            'active' => Member::where('gym_id', $gymId)->where('status', 'active')->count(),
+            'expired' => Member::where('gym_id', $gymId)->where('status', 'expired')->count(),
+            'suspended' => Member::where('gym_id', $gymId)->where('status', 'suspended')->count(),
+            'expiring_soon' => Member::where('gym_id', $gymId)
+                ->where('status', 'active')
+                ->whereBetween('expiry_date', [
+                    now()->toDateString(),
+                    now()->addDays(7)->toDateString(),
+                ])
+                ->count(),
+        ];
+
+        return response()->json($stats);
+    }
+}

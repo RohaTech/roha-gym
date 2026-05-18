@@ -19,6 +19,9 @@ class Amharic extends Lang {
         return [
             'male' => 'ወንድ',
             'female' => 'ሴት',
+            'statusPending' => 'በመጠባበቅ ላይ',
+            'statusActive' => 'ንቁ',
+            'statusInactive' => 'የታግደ',
         ];
     }
 }

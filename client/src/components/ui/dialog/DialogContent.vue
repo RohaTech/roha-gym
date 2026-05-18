@@ -1,0 +1,34 @@
+<script setup lang="ts">
+import { DialogClose, DialogContent, type DialogContentEmits, type DialogContentProps, DialogOverlay, DialogPortal, useForwardPropsEmits } from 'reka-ui'
+import { X } from 'lucide-vue-next'
+import { cn } from '@/lib/utils'
+
+const props = defineProps<DialogContentProps & { class?: string }>()
+const emits = defineEmits<DialogContentEmits>()
+
+const forwarded = useForwardPropsEmits(props, emits)
+</script>
+
+<template>
+  <DialogPortal>
+    <DialogOverlay
+      class="fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
+    />
+    <DialogContent
+      v-bind="forwarded"
+      :class="cn(
+        'fixed left-1/2 top-1/2 z-50 grid w-full max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 border border-surface-700 bg-surface-900 p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg',
+        props.class,
+      )"
+    >
+      <slot />
+
+      <DialogClose
+        class="absolute top-4 right-4 rounded-sm opacity-70 ring-offset-surface-950 transition-opacity hover:opacity-100 focus:outline-hidden focus:ring-2 focus:ring-brand-400 focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-surface-800 data-[state=open]:text-surface-400"
+      >
+        <X class="w-4 h-4" />
+        <span class="sr-only">Close</span>
+      </DialogClose>
+    </DialogContent>
+  </DialogPortal>
+</template>

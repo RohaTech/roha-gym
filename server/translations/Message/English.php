@@ -36,7 +36,19 @@ class English extends Lang {
             'forbidden' => 'You are not allowed to access this resource',
             'unauthorized' => 'You are not authorized to access this resource',
             'unable_to_login_please_contact_administrator' => 'Unable to login please contact administrator',
+            'account_inactive' => 'Your account is inactive. Please contact the administrator.',
             'success' => 'success',
+            
+            // Membership Types
+            'membership_type_created' => 'Membership type created successfully',
+            'membership_type_updated' => 'Membership type updated successfully',
+            'membership_type_deleted' => 'Membership type deleted successfully',
+            'membership_type_has_active_members' => 'Cannot delete membership type with active members',
+            
+            // Members
+            'member_created' => 'Member added successfully',
+            'member_updated' => 'Member updated successfully',
+            'member_deleted' => 'Member deleted successfully',
         ];
     }
 }

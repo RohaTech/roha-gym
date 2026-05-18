@@ -19,3 +19,14 @@ Route::prefix('auth')->group(function () {
         Route::get('/me',      [AuthController::class, 'me']);
     });
 });
+
+// Protected routes
+Route::middleware('auth:sanctum')->group(function () {
+    // Membership Types
+    Route::apiResource('membership-types', \App\Http\Controllers\MembershipTypeController::class);
+    
+    // Members
+    Route::get('members/expiring', [\App\Http\Controllers\MemberController::class, 'expiring']);
+    Route::get('members/stats', [\App\Http\Controllers\MemberController::class, 'stats']);
+    Route::apiResource('members', \App\Http\Controllers\MemberController::class);
+});
