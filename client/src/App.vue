@@ -1,5 +1,9 @@
 <script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
+import { RouterView } from 'vue-router'
+import { useThemeStore } from '@/store/themeStore'
+
+// Initialize theme store
+const themeStore = useThemeStore()
 </script>
 
 <template>

@@ -1,28 +1,30 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
 import AppSidebar from '@/components/AppSidebar.vue'
+import ThemeToggle from '@/components/ThemeToggle.vue'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 </script>
 
 <template>
-  <SidebarProvider class="bg-surface-950 text-white">
+  <SidebarProvider>
     <AppSidebar role="user" />
-    <SidebarInset class="bg-surface-950 text-white">
-      <header class="border-b border-surface-800/60 px-4 py-3">
+    <SidebarInset>
+      <header class="border-b border-surface-200 dark:border-surface-800/60 px-4 py-3 bg-white dark:bg-surface-950">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <SidebarTrigger class="md:hidden text-surface-200 hover:text-white" />
+            <SidebarTrigger class="md:hidden" />
             <div>
               <p class="text-xs text-surface-400">{{ $lang.userLayoutOverline }}</p>
               <h1 class="text-lg font-semibold">{{ $lang.userLayoutTitle }}</h1>
             </div>
           </div>
-          <div>
+          <div class="flex items-center gap-2">
+            <ThemeToggle />
             <p class="text-xs text-surface-500 hidden sm:block">{{ $lang.sidebarBrand }}</p>
           </div>
         </div>
       </header>
-      <main class="px-4 py-6">
+      <main class="px-4 py-6 bg-surface-50 dark:bg-surface-950 min-h-screen">
         <RouterView />
       </main>
     </SidebarInset>

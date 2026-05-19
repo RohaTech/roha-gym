@@ -47,7 +47,7 @@ class MemberController extends Controller
     public function expiring(Request $request): JsonResponse
     {
         $gymId = $request->user()->id;
-        $daysAhead = $request->input('days', 7);
+        $daysAhead = intval($request->input('days', 7));
 
         $members = Member::where('gym_id', $gymId)
             ->where('status', 'active')

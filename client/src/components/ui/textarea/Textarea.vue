@@ -23,7 +23,7 @@ const modelValue = useVModel(props, 'modelValue', emits, {
   <textarea
     v-model="modelValue"
     :class="cn(
-      'flex min-h-[80px] w-full rounded-md border border-surface-700 bg-surface-900 px-3 py-2 text-sm ring-offset-surface-950 placeholder:text-surface-500 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+      'flex min-h-[80px] w-full rounded-md border border-surface-300 dark:border-surface-700 bg-white dark:bg-surface-900 text-surface-900 dark:text-surface-50 px-3 py-2 text-sm ring-offset-white dark:ring-offset-surface-950 placeholder:text-surface-500 dark:placeholder:text-surface-500 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
       props.class,
     )"
   />

@@ -59,6 +59,7 @@
 
 @layer base {
   :root {
+    /* Light theme colors */
     --background: var(--color-surface-50);
     --foreground: var(--color-surface-900);
     --card: 0 0% 100%;
@@ -78,9 +79,20 @@
     --border: var(--color-surface-200);
     --input: var(--color-surface-200);
     --ring: var(--color-brand-500);
+    
+    /* Sidebar colors for light theme */
+    --color-sidebar: oklch(1 0 0);
+    --color-sidebar-foreground: oklch(0.13 0.01 260);
+    --color-sidebar-primary: oklch(0.65 0.18 45);
+    --color-sidebar-primary-foreground: oklch(1 0 0);
+    --color-sidebar-accent: oklch(0.97 0.00 0);
+    --color-sidebar-accent-foreground: oklch(0.13 0.01 260);
+    --color-sidebar-border: oklch(0.88 0.00 0);
+    --color-sidebar-ring: oklch(0.70 0.14 50);
   }
 
   .dark {
+    /* Dark theme colors */
     --background: var(--color-surface-950);
     --foreground: var(--color-surface-50);
     --card: var(--color-surface-900);
@@ -96,6 +108,16 @@
     --border: var(--color-surface-700);
     --input: var(--color-surface-700);
     --ring: var(--color-brand-400);
+    
+    /* Sidebar colors for dark theme */
+    --color-sidebar: oklch(0.13 0.01 260);
+    --color-sidebar-foreground: oklch(0.97 0.00 0);
+    --color-sidebar-primary: oklch(0.65 0.18 45);
+    --color-sidebar-primary-foreground: oklch(1 0 0);
+    --color-sidebar-accent: oklch(0.18 0.01 260);
+    --color-sidebar-accent-foreground: oklch(0.97 0.00 0);
+    --color-sidebar-border: oklch(0.23 0.01 260);
+    --color-sidebar-ring: oklch(0.70 0.14 50);
   }
 
   * {
