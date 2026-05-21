@@ -41,7 +41,7 @@ const form = ref<MemberForm>({
   full_name: '',
   phone: '',
   membership_type_id: '',
-  start_date: new Date().toISOString().split('T')[0],
+  start_date: new Date().toISOString().split('T')[0]!,
   gender: '',
   notes: '',
 })
@@ -367,7 +367,13 @@ onUnmounted(() => {
             <Button type="submit" :disabled="isSubmitting" class="w-full">
               {{ isSubmitting ? 'Adding Member...' : 'Add Member' }}
             </Button>
-            <Button type="button" variant="outline" @click="goBack" :disabled="isSubmitting" class="w-full">
+            <Button
+              type="button"
+              variant="outline"
+              @click="goBack"
+              :disabled="isSubmitting"
+              class="w-full"
+            >
               Cancel
             </Button>
           </div>

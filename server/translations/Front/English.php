@@ -128,6 +128,27 @@ class English extends Lang {
             'privacyPolicy' => 'Privacy Policy',
             'alreadyHaveAccount' => 'Already have an account?',
 
+            // Check In
+            'checkInTitle' => 'Member Check-In',
+            'checkInSubtitle' => 'Scan a QR code or manually enter a member ID to record attendance.',
+            'qrScanner' => 'QR Scanner',
+            'manualEntry' => 'Manual Entry',
+            'scanQrCode' => 'Scan QR Code',
+            'scanQrDesc' => 'Hold the member\'s ID card or mobile screen up to the camera.',
+            'cameraError' => 'Camera Error',
+            'processing' => 'Processing...',
+            'enterCode' => 'Enter Member ID',
+            'enterCodeDesc' => 'Type the 5-digit unique code shown on the member\'s profile.',
+            'codePlaceholder' => 'e.g. 12345',
+            'submitCheckIn' => 'Record Check-In',
+            'checkInSuccess' => 'Check-In Successful',
+            'daysRemaining' => 'days remaining',
+            'checkInFailed' => 'Check-In Failed',
+            'reasonNotFound' => 'Member not found. Please verify the ID or QR code.',
+            'reasonExpired' => 'Membership has expired. Renewal required.',
+            'reasonLimit' => 'Daily check-in limit reached for this membership.',
+            'reasonUnknown' => 'An unknown error occurred.',
+
             // Layouts
             'adminLayoutOverline' => 'System Admin',
             'adminLayoutTitle' => 'Admin Dashboard',

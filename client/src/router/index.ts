@@ -83,6 +83,12 @@ const router = createRouter({
           component: () => import('@/views/MembersExpiringView.vue'),
           meta: { requiresAuth: true, roles: ['user'] },
         },
+        {
+          path: 'check-in',
+          name: 'check-in',
+          component: () => import('@/views/CheckInView.vue'),
+          meta: { requiresAuth: true, roles: ['user'] },
+        },
       ],
     },
     {

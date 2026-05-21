@@ -29,4 +29,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('members/expiring', [\App\Http\Controllers\MemberController::class, 'expiring']);
     Route::get('members/stats', [\App\Http\Controllers\MemberController::class, 'stats']);
     Route::apiResource('members', \App\Http\Controllers\MemberController::class);
+
+    // Check-in
+    Route::post('gyms/{gym}/check-in', function (\App\Http\Requests\CheckInRequest $request, \App\Services\CheckInService $service) {
+        return response()->json($service->handle($request->identifier, $request->method, $request->gym->id));
+    })->middleware(\App\Http\Middleware\GymScope::class);
 });
