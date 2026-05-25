@@ -1,1 +1,1 @@
-export const API_URL = 'http://gym.rohatechs.com/api'
+export const API_URL = 'http://gym-back.rohatechs.com/api'
