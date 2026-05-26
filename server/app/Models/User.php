@@ -53,4 +53,20 @@ class User extends Authenticatable
             'status' => 'integer',
         ];
     }
+
+
+    /**
+     * Generate a unique 5-digit code for a member within the same gym.
+     * 
+     * @param int $gymId
+     * @return int
+     */
+    public static function generateUniqueCode(int $gymId): int{
+        do {
+            $code = random_int(10000, 99999); // Generate a random 5-digit number
+            $exists = Member::where('gym_id', $gymId)->where('unique_code', $code)->exists();
+        } while ($exists); // Repeat until a unique code is found
+
+        return $code;
+    }
 }

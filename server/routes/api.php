@@ -2,7 +2,10 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\CheckInController;
 use App\Http\Controllers\Lang\LanguageController;
+use App\Http\Controllers\MemberController;
+use App\Http\Controllers\MembershipTypeController;
 use Helper\Response\Response;
 use Translation\Message;
 
@@ -23,15 +26,13 @@ Route::prefix('auth')->group(function () {
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
     // Membership Types
-    Route::apiResource('membership-types', \App\Http\Controllers\MembershipTypeController::class);
+    Route::apiResource('membership-types', MembershipTypeController::class);
     
     // Members
-    Route::get('members/expiring', [\App\Http\Controllers\MemberController::class, 'expiring']);
-    Route::get('members/stats', [\App\Http\Controllers\MemberController::class, 'stats']);
-    Route::apiResource('members', \App\Http\Controllers\MemberController::class);
+    Route::get('members/expiring', [MemberController::class, 'expiring']);
+    Route::get('members/stats', [MemberController::class, 'stats']);
+    Route::apiResource('members', MemberController::class);
 
     // Check-in
-    Route::post('gyms/{gym}/check-in', function (\App\Http\Requests\CheckInRequest $request, \App\Services\CheckInService $service) {
-        return response()->json($service->handle($request->identifier, $request->method, $request->gym->id));
-    })->middleware(\App\Http\Middleware\GymScope::class);
+    Route::post('gyms/{gym}/check-in', [CheckInController::class, 'store']);
 });

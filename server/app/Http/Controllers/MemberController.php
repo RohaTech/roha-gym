@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Member;
 use App\Models\MembershipType;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -96,10 +97,10 @@ class MemberController extends Controller
         }
 
         // Generate unique code (5 characters)
-        $uniqueCode = $this->generateUniqueCode();
+        $uniqueCode = User::generateUniqueCode($gymId);
 
         // Generate slug
-        $slug = Str::slug($validated['full_name']) . '-' . Str::random(6);
+        $slug = Str::slug($validated['full_name']) . '-' . Str::random(6). '-' . Str::random(4);
 
         $member = Member::create([
             'gym_id' => $gymId,

@@ -20,7 +20,7 @@ class AuthController extends Controller
             'phone'    => 'required|string|max:20|unique:users,phone',
             'password' => 'required|string|min:8|confirmed',
             'address'  => 'required|string|max:500',
-            'logo'     => 'nullable|image|mimes:jpeg,png,webp|max:2048', // 2MB in KB
+            'logo'     => 'nullable|image|mimes:jpeg,png,webp|max:2048', // 2MB 
         ]);
 
         $logoPath = null;

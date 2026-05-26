@@ -2,7 +2,7 @@
 import { ref, computed, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
-import { ArrowLeft, Upload, X } from 'lucide-vue-next'
+import { ArrowLeft, Upload, X, CalendarIcon } from 'lucide-vue-next'
 import { toast } from 'vue-sonner'
 import axiosInstance from '@/api/axiosInstance'
 import { Button } from '@/components/ui/button'
@@ -10,6 +10,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { Calendar } from '@/components/ui/calendar'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { parseDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
 import {
   Select,
   SelectContent,
@@ -44,6 +47,23 @@ const form = ref<MemberForm>({
   start_date: new Date().toISOString().split('T')[0]!,
   gender: '',
   notes: '',
+})
+
+const df = new DateFormatter('en-US', {
+  dateStyle: 'long',
+})
+
+const startDateValue = computed({
+  get: () => {
+    return form.value.start_date ? parseDate(form.value.start_date) : undefined
+  },
+  set: (val) => {
+    if (val) {
+      form.value.start_date = val.toString()
+    } else {
+      form.value.start_date = ''
+    }
+  },
 })
 
 const photoFile = ref<File | null>(null)
@@ -287,14 +307,30 @@ onUnmounted(() => {
               </div>
 
               <!-- Start Date -->
-              <div class="space-y-2">
+              <div class="space-y-2 flex flex-col">
                 <Label for="start_date">Start Date *</Label>
-                <Input
-                  id="start_date"
-                  v-model="form.start_date"
-                  type="date"
-                  :class="errors.start_date ? 'border-danger-500' : ''"
-                />
+                <Popover>
+                  <PopoverTrigger as-child>
+                    <Button
+                      variant="outline"
+                      :class="[
+                        'w-full justify-start text-left font-normal',
+                        !form.start_date && 'text-surface-400',
+                        errors.start_date ? 'border-danger-500' : '',
+                      ]"
+                    >
+                      <CalendarIcon class="mr-2 h-4 w-4" />
+                      {{
+                        startDateValue
+                          ? df.format(startDateValue.toDate(getLocalTimeZone()))
+                          : 'Pick a date'
+                      }}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent class="w-auto p-0">
+                    <Calendar v-model="startDateValue" initial-focus layout="month-and-year" />
+                  </PopoverContent>
+                </Popover>
                 <p v-if="errors.start_date" class="text-sm text-danger-500">
                   {{ errors.start_date }}
                 </p>
