@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('gym_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('membership_type_id')->constrained('membership_types')->cascadeOnDelete();
             $table->string('slug')->unique();
-            $table->unsignedMediumInteger('unique_code', 5);
+            $table->unsignedInteger('unique_code');
             $table->string('full_name');
             $table->string('phone');
             $table->string('photo_path')->nullable();
@@ -27,7 +27,7 @@ return new class extends Migration
             $table->text('notes')->nullable();
             $table->timestamps();
 
-            $table->constraint('unique_code')->unique(['gym_id', 'unique_code']);
+            $table->unique(['gym_id', 'unique_code'], 'members_gym_id_unique_code_unique');
         });
     }
 
