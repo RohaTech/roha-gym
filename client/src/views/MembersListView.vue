@@ -2,7 +2,17 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
-import { Plus, Users, Search, Pencil, Trash2, Calendar, Phone, User as UserIcon } from 'lucide-vue-next'
+import {
+  Plus,
+  Users,
+  Search,
+  Pencil,
+  Trash2,
+  Calendar,
+  Phone,
+  CreditCard,
+  User as UserIcon,
+} from 'lucide-vue-next'
 import { toast } from 'vue-sonner'
 import axiosInstance from '@/api/axiosInstance'
 import { Button } from '@/components/ui/button'
@@ -60,7 +70,7 @@ const { data: members, isLoading } = useQuery({
     const params = new URLSearchParams()
     if (searchQuery.value) params.append('search', searchQuery.value)
     if (statusFilter.value !== 'all') params.append('status', statusFilter.value)
-    
+
     const response = await axiosInstance.get<Member[]>(`/members?${params}`)
     return response.data
   },
@@ -88,6 +98,10 @@ const isDeleting = computed(() => deleteMutation.isPending.value)
 
 function goToAddMember() {
   router.push({ name: 'member-create' })
+}
+
+function goToMemberCard(id: number) {
+  router.push({ name: 'member-card', params: { memberId: id } })
 }
 
 function openDeleteDialog(member: Member) {
@@ -186,9 +200,7 @@ function getDaysUntilExpiry(expiryDate: string) {
     <!-- Empty State -->
     <Card v-else-if="!members || members.length === 0" class="border-dashed border-2">
       <CardContent class="flex flex-col items-center justify-center py-16">
-        <div
-          class="w-16 h-16 rounded-full bg-surface-800/50 flex items-center justify-center mb-4"
-        >
+        <div class="w-16 h-16 rounded-full bg-surface-800/50 flex items-center justify-center mb-4">
           <Users class="w-8 h-8 text-surface-400" />
         </div>
         <h3 class="text-xl font-semibold mb-2">
@@ -238,6 +250,14 @@ function getDaysUntilExpiry(expiryDate: string) {
 
             <!-- Actions -->
             <div class="flex gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                class="h-8 w-8"
+                @click="goToMemberCard(member.id)"
+              >
+                <CreditCard class="w-4 h-4" />
+              </Button>
               <Button variant="ghost" size="icon" class="h-8 w-8">
                 <Pencil class="w-4 h-4" />
               </Button>
@@ -302,8 +322,8 @@ function getDaysUntilExpiry(expiryDate: string) {
         <DialogHeader>
           <DialogTitle>Delete Member</DialogTitle>
           <DialogDescription>
-            Are you sure you want to delete "{{ deletingMember?.full_name }}"? This action cannot
-            be undone.
+            Are you sure you want to delete "{{ deletingMember?.full_name }}"? This action cannot be
+            undone.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>

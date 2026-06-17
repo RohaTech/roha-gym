@@ -81,7 +81,7 @@ const ownerNav: NavGroup[] = [
         isPrimary: true,
       },
       { labelKey: 'sidebarAnalytics', url: '/app/analytics', icon: BarChart3 },
-      { labelKey: 'sidebarMembershipCards', url: '/app/cards', icon: CreditCard },
+      { labelKey: 'sidebarMembershipCards', url: '/app/members', icon: CreditCard },
       { labelKey: 'sidebarSettings', url: '/app/settings', icon: Settings },
     ],
   },

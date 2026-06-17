@@ -23,7 +23,7 @@ return new class extends Migration
             $table->string('gender')->nullable();
             $table->date('start_date');
             $table->date('expiry_date');
-            $table->tinyInteger('status')->default(USER_STATUS_ACTIVE);
+            $table->string('status', 20)->default('active');
             $table->text('notes')->nullable();
             $table->timestamps();
 

@@ -90,10 +90,10 @@ const createMutation = useMutation({
     })
     return response.data
   },
-  onSuccess: () => {
+  onSuccess: (data) => {
     queryClient.invalidateQueries({ queryKey: ['members'] })
     toast.success('Member added successfully')
-    router.push({ name: 'members-list' })
+    router.push({ name: 'member-card', params: { memberId: data.data.id } })
   },
   onError: (error: any) => {
     const message = error?.response?.data?.message || 'Failed to add member'

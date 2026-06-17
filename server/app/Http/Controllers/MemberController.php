@@ -221,6 +221,42 @@ class MemberController extends Controller
     }
 
     /**
+     * Get card data for a specific member.
+     */
+    public function cardData(Request $request, int $gym, int $member): JsonResponse
+    {
+        $memberModel = Member::where('id', $member)
+            ->where('gym_id', $gym)
+            ->firstOrFail();
+
+        if ($memberModel->gym_id !== $request->user()->id) {
+            abort(403);
+        }
+
+        $memberModel->load('gym', 'membershipType');
+
+        return response()->json([
+            'member' => [
+                'name'            => $memberModel->full_name,
+                'photo_url'       => $memberModel->photo_path
+                    ? asset('storage/' . $memberModel->photo_path)
+                    : null,
+                'code'            => $memberModel->unique_code,
+                'slug'            => $memberModel->slug,
+                'membership_type' => $memberModel->membershipType->name,
+                'start_date'      => $memberModel->start_date->format('M d, Y'),
+                'expiry_date'     => $memberModel->expiry_date->format('M d, Y'),
+            ],
+            'gym' => [
+                'name'     => $memberModel->gym->name,
+                'logo_url' => $memberModel->gym->logo_path
+                    ? asset('storage/' . $memberModel->gym->logo_path)
+                    : null,
+            ],
+        ]);
+    }
+
+    /**
      * Generate a unique 5-character code.
      */
     private function generateUniqueCode(): string
