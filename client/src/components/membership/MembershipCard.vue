@@ -8,6 +8,7 @@ defineProps<{
     startDate: string
     expiryDate: string
     gymLogo: string
+    gymName: string
 }>()
 </script>
 
@@ -16,8 +17,8 @@ defineProps<{
         class="flex flex-col overflow-hidden rounded-2xl shadow-2xl bg-white"
         style="width: 54mm; height: 85.6mm;"
     >
-        <!-- Header: dark band with centered logo only -->
-        <div class="bg-[#0f172a] flex items-center justify-center py-3 px-4 relative">
+        <!-- Header: dark band with logo + gym name -->
+        <div class="bg-[#0f172a] flex flex-col items-center justify-center py-2 px-4 relative">
             <!-- Decorative accent stripe -->
             <div
                 class="absolute bottom-0 left-0 right-0 h-[2px]"
@@ -27,13 +28,14 @@ defineProps<{
                 v-if="gymLogo"
                 :src="gymLogo"
                 alt="gym logo"
-                class="h-8 w-auto object-contain"
+                class="h-7 w-auto object-contain"
             />
-            <div v-else class="h-8 w-16 rounded bg-white/10"></div>
+            <div v-else class="h-7 w-16 rounded bg-white/10"></div>
+            <p class="text-white text-[7px] font-bold uppercase tracking-widest mt-1 opacity-90">{{ gymName }}</p>
         </div>
 
         <!-- Photo -->
-        <div class="flex justify-center mt-3">
+        <div class="flex justify-center mt-2">
             <div
                 class="rounded-full overflow-hidden"
                 style="width: 52px; height: 52px; padding: 2px; background: linear-gradient(135deg, #f59e0b, #ea580c);"
@@ -91,10 +93,10 @@ defineProps<{
         </div>
 
         <!-- QR code -->
-        <div class="flex justify-center mt-2">
+        <div class="flex justify-center mt-1.5">
             <img
-                :src="`https://api.qrserver.com/v1/create-qr-code/?data=${memberSlug}&size=200x200`"
-                class="w-14 h-14"
+                :src="`https://api.qrserver.com/v1/create-qr-code/?data=${memberSlug}&size=300x300`"
+                class="w-20 h-20"
                 crossorigin="anonymous"
                 alt="QR code"
             />

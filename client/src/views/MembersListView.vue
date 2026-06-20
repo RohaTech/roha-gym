@@ -227,7 +227,7 @@ function getDaysUntilExpiry(expiryDate: string) {
         :key="member.id"
         class="hover:border-brand-500/50 transition-colors"
       >
-        <CardHeader>
+        <CardHeader class="pb-2">
           <div class="flex items-start gap-3">
             <!-- Avatar -->
             <div
@@ -247,29 +247,29 @@ function getDaysUntilExpiry(expiryDate: string) {
               <h3 class="font-semibold truncate">{{ member.full_name }}</h3>
               <p class="text-sm text-surface-400">{{ member.membership_type.name }}</p>
             </div>
+          </div>
 
-            <!-- Actions -->
-            <div class="flex gap-1">
-              <Button
-                variant="ghost"
-                size="icon"
-                class="h-8 w-8"
-                @click="goToMemberCard(member.id)"
-              >
-                <CreditCard class="w-4 h-4" />
-              </Button>
-              <Button variant="ghost" size="icon" class="h-8 w-8">
-                <Pencil class="w-4 h-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                class="h-8 w-8 text-danger-500 hover:text-danger-400"
-                @click="openDeleteDialog(member)"
-              >
-                <Trash2 class="w-4 h-4" />
-              </Button>
-            </div>
+          <!-- Actions row below info so they never overflow -->
+          <div class="flex gap-1 mt-2 justify-end">
+            <Button
+              variant="ghost"
+              size="icon"
+              class="h-8 w-8"
+              @click="goToMemberCard(member.id)"
+            >
+              <CreditCard class="w-4 h-4" />
+            </Button>
+            <Button variant="ghost" size="icon" class="h-8 w-8">
+              <Pencil class="w-4 h-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              class="h-8 w-8 text-danger-500 hover:text-danger-400"
+              @click="openDeleteDialog(member)"
+            >
+              <Trash2 class="w-4 h-4" />
+            </Button>
           </div>
         </CardHeader>
 

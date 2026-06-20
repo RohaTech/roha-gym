@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { QrcodeStream } from 'vue-qrcode-reader'
 import { useQrScanner } from '@/composables/useQrScanner'
 import { useManualCheckIn } from '@/composables/useManualCheckIn'
@@ -15,15 +15,41 @@ import {
   XCircle,
   AlertCircle,
   Loader2,
-  CameraOff
+  CameraOff,
+  User,
+  X,
+  Clock,
+  CalendarCheck,
+  ShieldCheck,
 } from 'lucide-vue-next'
 
 const checkInStore = useCheckInStore()
 const { onDecode, onError, isOnCooldown, cameraError } = useQrScanner()
-const { code, submit, validationError } = useManualCheckIn()
+const { code, submit, validationError, clearError } = useManualCheckIn()
 
-// Add basic active tab state
 const activeTab = ref('qr')
+
+const showModal = computed(
+  () => checkInStore.status === 'success' || checkInStore.status === 'failed',
+)
+
+function formatDateTime(raw: string | null): string {
+  if (!raw) return '—'
+  const d = new Date(raw)
+  return d.toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  })
+}
+
+function daysColor(days: number): string {
+  if (days > 14) return 'text-success-500'
+  if (days > 7) return 'text-yellow-400'
+  return 'text-danger-500'
+}
 
 </script>
 
@@ -119,7 +145,8 @@ const activeTab = ref('qr')
                     type="text"
                     maxlength="5"
                     :placeholder="$lang.codePlaceholder || 'e.g. 12345'"
-                    class="h-14 text-center text-2xl tracking-widest font-mono bg-surface-950 border-surface-700 text-white placeholder:text-surface-600 focus-visible:border-brand-500 focus-visible:ring-brand-500/30"
+                    class="h-14 text-center text-2xl tracking-widest font-mono uppercase bg-surface-950 border-surface-700 text-white placeholder:text-surface-600 focus-visible:border-brand-500 focus-visible:ring-brand-500/30"
+                    @input="clearError"
                   />
                   <p v-if="validationError" class="text-xs text-danger-500 flex items-center gap-1 justify-center mt-2 animate-scale-in">
                     <AlertCircle class="w-3 h-3" /> {{ validationError }}
@@ -127,7 +154,7 @@ const activeTab = ref('qr')
                 </div>
                 <Button
                   type="submit"
-                  class="w-full h-12 bg-gradient-to-r from-brand-500 to-energy-500 hover:from-brand-400 hover:to-energy-400 text-white rounded-xl font-semibold shadow-lg shadow-brand-500/20 hover:shadow-brand-500/40 transition-all border-0"
+                  class="w-full h-12 bg-linear-to-r from-brand-500 to-energy-500 hover:from-brand-400 hover:to-energy-400 text-white rounded-xl font-semibold shadow-lg shadow-brand-500/20 hover:shadow-brand-500/40 transition-all border-0"
                 >
                   {{ $lang.submitCheckIn || 'Record Check-In' }}
                 </Button>
@@ -137,43 +164,109 @@ const activeTab = ref('qr')
         </TabsContent>
       </Tabs>
 
-      <!-- Status Indicator Overlay -->
-      <div v-if="checkInStore.status === 'success' || checkInStore.status === 'failed'" class="fixed bottom-6 right-6 left-6 md:left-auto z-50 animate-slide-up">
-        
-        <!-- Success Alert -->
-        <div v-if="checkInStore.status === 'success' && checkInStore.lastResult?.success" class="bg-surface-900 border border-success-500/30 rounded-2xl p-5 shadow-2xl flex items-start gap-4 max-w-sm w-full relative overflow-hidden">
-          <div class="absolute top-0 right-0 w-32 h-32 bg-success-500/10 blur-[40px] rounded-full pointer-events-none"></div>
-          
-          <div class="w-12 h-12 rounded-full bg-success-500/20 text-success-500 flex items-center justify-center shrink-0">
-            <CheckCircle2 class="w-6 h-6" />
-          </div>
-          
-          <div class="flex-1 min-w-0">
-            <h3 class="text-success-500 font-bold mb-1">{{ $lang.checkInSuccess || 'Check-In Successful' }}</h3>
-            <div class="flex items-center gap-3 mt-3">
-               <img v-if="checkInStore.lastResult.member.photo" :src="checkInStore.lastResult.member.photo" class="w-10 h-10 rounded-full object-cover border border-surface-700" />
-               <div v-else class="w-10 h-10 rounded-full bg-surface-800 flex items-center justify-center border border-surface-700">
-                  <User class="w-5 h-5 text-surface-500" />
-               </div>
-               <div>
-                  <p class="font-medium text-white truncate">{{ checkInStore.lastResult.member.name }}</p>
-                  <p class="text-xs text-surface-400">{{ checkInStore.lastResult.member.remaining_days }} {{ $lang.daysRemaining || 'days remaining' }}</p>
-               </div>
+    </div>
+
+    <!-- Check-In Result Modal -->
+    <Transition name="modal">
+      <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <!-- Backdrop — clicking it closes the modal -->
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="checkInStore.reset()" />
+
+        <!-- SUCCESS CARD -->
+        <div
+          v-if="checkInStore.status === 'success' && checkInStore.lastResult?.success"
+          class="relative z-10 w-full max-w-xs bg-surface-900 rounded-2xl shadow-2xl overflow-hidden border border-surface-700"
+        >
+          <div class="h-1 w-full bg-linear-to-r from-success-500 to-emerald-400" />
+
+          <!-- Close -->
+          <button
+            class="absolute top-2 right-2 w-7 h-7 rounded-full bg-surface-800 hover:bg-surface-700 flex items-center justify-center text-surface-400 hover:text-white transition-colors"
+            @click="checkInStore.reset()"
+          >
+            <X class="w-3.5 h-3.5" />
+          </button>
+
+          <div class="flex flex-col items-center pt-5 pb-4 px-4">
+            <!-- Photo + badge -->
+            <div class="relative mb-3">
+              <img
+                v-if="checkInStore.lastResult.member.photo"
+                :src="checkInStore.lastResult.member.photo"
+                class="w-16 h-16 rounded-full object-cover border-4 border-surface-800"
+              />
+              <div
+                v-else
+                class="w-16 h-16 rounded-full bg-surface-800 border-4 border-surface-700 flex items-center justify-center"
+              >
+                <User class="w-7 h-7 text-surface-500" />
+              </div>
+              <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-success-500 rounded-full px-2 py-0.5 flex items-center gap-1 shadow">
+                <ShieldCheck class="w-2.5 h-2.5 text-white" />
+                <span class="text-white text-[9px] font-bold uppercase tracking-wide whitespace-nowrap">Checked In</span>
+              </div>
+            </div>
+
+            <h2 class="text-white font-bold text-base mt-1 text-center leading-tight">
+              {{ checkInStore.lastResult.member.name }}
+            </h2>
+
+            <div class="w-full h-px bg-surface-700 my-3" />
+
+            <!-- Stats: 2 small tiles + last visit row -->
+            <div class="w-full space-y-2">
+              <div class="grid grid-cols-2 gap-2">
+                <div class="bg-surface-800 rounded-xl p-2.5 text-center">
+                  <CalendarCheck class="w-3.5 h-3.5 mx-auto mb-1 text-surface-400" />
+                  <p class="text-lg font-black leading-none" :class="daysColor(checkInStore.lastResult.member.remaining_days)">
+                    {{ checkInStore.lastResult.member.remaining_days }}
+                  </p>
+                  <p class="text-[10px] text-surface-400 mt-0.5">Days Left</p>
+                </div>
+                <div class="bg-surface-800 rounded-xl p-2.5 text-center">
+                  <CheckCircle2 class="w-3.5 h-3.5 mx-auto mb-1 text-surface-400" />
+                  <p class="text-lg font-black text-white leading-none">
+                    {{ checkInStore.lastResult.member.today_count }}
+                  </p>
+                  <p class="text-[10px] text-surface-400 mt-0.5">Today</p>
+                </div>
+              </div>
+
+              <div class="bg-surface-800 rounded-xl px-3 py-2 flex items-center gap-2">
+                <Clock class="w-3.5 h-3.5 text-surface-400 shrink-0" />
+                <div class="min-w-0">
+                  <p class="text-[10px] text-surface-400 uppercase tracking-wide">Last Visit</p>
+                  <p class="text-xs font-semibold text-white truncate">
+                    {{ checkInStore.lastResult.member.last_check_in
+                      ? formatDateTime(checkInStore.lastResult.member.last_check_in)
+                      : 'No previous visits' }}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Failure Alert -->
-        <div v-if="checkInStore.status === 'failed'" class="bg-surface-900 border border-danger-500/30 rounded-2xl p-5 shadow-2xl flex items-start gap-4 max-w-sm w-full relative overflow-hidden">
-          <div class="absolute top-0 right-0 w-32 h-32 bg-danger-500/10 blur-[40px] rounded-full pointer-events-none"></div>
-          
-          <div class="w-10 h-10 rounded-full bg-danger-500/20 text-danger-500 flex items-center justify-center shrink-0 mt-1">
-            <XCircle class="w-5 h-5" />
-          </div>
-          
-          <div>
-            <h3 class="text-danger-500 font-bold mb-1">{{ $lang.checkInFailed || 'Check-In Failed' }}</h3>
-            <p class="text-sm text-surface-300">
+        <!-- FAILURE CARD -->
+        <div
+          v-else-if="checkInStore.status === 'failed'"
+          class="relative z-10 w-full max-w-xs bg-surface-900 rounded-2xl shadow-2xl overflow-hidden border border-surface-700"
+        >
+          <div class="h-1 w-full bg-linear-to-r from-danger-500 to-red-400" />
+
+          <button
+            class="absolute top-2 right-2 w-7 h-7 rounded-full bg-surface-800 hover:bg-surface-700 flex items-center justify-center text-surface-400 hover:text-white transition-colors"
+            @click="checkInStore.reset()"
+          >
+            <X class="w-3.5 h-3.5" />
+          </button>
+
+          <div class="flex flex-col items-center py-6 px-4 text-center">
+            <div class="w-14 h-14 rounded-full bg-danger-500/15 border-2 border-danger-500/30 flex items-center justify-center mb-3">
+              <XCircle class="w-7 h-7 text-danger-500" />
+            </div>
+            <h2 class="text-danger-500 font-bold text-base mb-1">Check-In Failed</h2>
+            <p class="text-surface-300 text-sm leading-relaxed">
               <template v-if="checkInStore.failureReason === 'not_found'">
                 {{ $lang.reasonNotFound || 'Member not found. Please verify the ID or QR code.' }}
               </template>
@@ -189,8 +282,30 @@ const activeTab = ref('qr')
             </p>
           </div>
         </div>
-        
       </div>
-    </div>
+    </Transition>
   </div>
 </template>
+
+<style scoped>
+.modal-enter-active,
+.modal-leave-active {
+  transition: opacity 0.2s ease;
+}
+.modal-enter-active .relative,
+.modal-leave-active .relative {
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease;
+}
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+}
+.modal-enter-from .relative {
+  transform: scale(0.88) translateY(16px);
+  opacity: 0;
+}
+.modal-leave-to .relative {
+  transform: scale(0.92);
+  opacity: 0;
+}
+</style>
