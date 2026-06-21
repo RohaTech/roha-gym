@@ -104,6 +104,10 @@ function goToMemberCard(id: number) {
   router.push({ name: 'member-card', params: { memberId: id } })
 }
 
+function goToEditMember(id: number) {
+  router.push({ name: 'member-edit', params: { memberId: id } })
+}
+
 function openDeleteDialog(member: Member) {
   deletingMember.value = member
   isDeleteDialogOpen.value = true
@@ -259,7 +263,12 @@ function getDaysUntilExpiry(expiryDate: string) {
             >
               <CreditCard class="w-4 h-4" />
             </Button>
-            <Button variant="ghost" size="icon" class="h-8 w-8">
+            <Button
+              variant="ghost"
+              size="icon"
+              class="h-8 w-8"
+              @click="goToEditMember(member.id)"
+            >
               <Pencil class="w-4 h-4" />
             </Button>
             <Button

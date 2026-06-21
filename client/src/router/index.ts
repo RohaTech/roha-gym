@@ -78,6 +78,12 @@ const router = createRouter({
           meta: { requiresAuth: true, roles: ['user'] },
         },
         {
+          path: 'members/:memberId/edit',
+          name: 'member-edit',
+          component: () => import('@/views/members/MemberEditView.vue'),
+          meta: { requiresAuth: true, roles: ['user'] },
+        },
+        {
           path: 'members/expiring',
           name: 'members-expiring',
           component: () => import('@/views/MembersExpiringView.vue'),
