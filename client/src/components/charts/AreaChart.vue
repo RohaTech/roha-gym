@@ -24,11 +24,11 @@ const pts = computed(() => {
 })
 
 function smooth(points: { x: number; y: number }[]): string {
-    if (points.length < 2) return points.length ? `M ${points[0].x} ${points[0].y}` : ''
-    let d = `M ${points[0].x} ${points[0].y}`
+    if (points.length < 2) return points.length ? `M ${points[0]!.x} ${points[0]!.y}` : ''
+    let d = `M ${points[0]!.x} ${points[0]!.y}`
     for (let i = 1; i < points.length; i++) {
-        const mx = (points[i - 1].x + points[i].x) / 2
-        d += ` C ${mx} ${points[i - 1].y} ${mx} ${points[i].y} ${points[i].x} ${points[i].y}`
+        const mx = (points[i - 1]!.x + points[i]!.x) / 2
+        d += ` C ${mx} ${points[i - 1]!.y} ${mx} ${points[i]!.y} ${points[i]!.x} ${points[i]!.y}`
     }
     return d
 }
@@ -38,8 +38,8 @@ const linePath = computed(() => smooth(pts.value))
 const areaPath = computed(() => {
     if (!pts.value.length) return ''
     const base = PAD.top + ch
-    const first = pts.value[0]
-    const last = pts.value[pts.value.length - 1]
+    const first = pts.value[0]!
+    const last = pts.value[pts.value.length - 1]!
     return `M ${first.x} ${base} L ${first.x} ${first.y} ${smooth(pts.value).slice(1)} L ${last.x} ${base} Z`
 })
 

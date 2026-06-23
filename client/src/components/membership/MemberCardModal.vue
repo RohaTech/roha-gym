@@ -38,6 +38,7 @@ const { data, isLoading, isError } = useMemberCard(memberId)
                 :member-photo="data.member.photo_url ?? ''"
                 :member-code="data.member.code"
                 :member-slug="data.member.slug"
+                :member-phone="data.member.phone ?? ''"
                 :membership-type="data.member.membership_type"
                 :start-date="data.member.start_date"
                 :expiry-date="data.member.expiry_date"
