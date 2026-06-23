@@ -38,4 +38,4 @@ __screenshots__/
 # Vite
 *.timestamp-*-*.mjs
 
-client\src\constants\index.ts
+src\constants\index.ts
