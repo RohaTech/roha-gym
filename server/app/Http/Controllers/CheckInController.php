@@ -16,8 +16,10 @@ class CheckInController extends Controller
         $method     = $request->input('method');
         $gymId = $request->user()->id;
 
+        $column = $method === 'qr' ? 'slug' : 'unique_code';
+
         $member = Member::where('gym_id', $gymId)
-            ->where('unique_code', $identifier)
+            ->where($column, $identifier)
             ->with('membershipType')
             ->first();
 
