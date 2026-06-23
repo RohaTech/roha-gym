@@ -17,6 +17,7 @@ import { toast } from 'vue-sonner'
 import axiosInstance from '@/api/axiosInstance'
 import { storageUrl } from '@/constants'
 import MemberCardModal from '@/components/membership/MemberCardModal.vue'
+import { useAuthStore } from '@/store/authStore'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -59,6 +60,7 @@ interface Member {
 
 const router = useRouter()
 const queryClient = useQueryClient()
+const authStore = useAuthStore()
 
 const searchQuery = ref('')
 const statusFilter = ref<string>('all')
@@ -102,6 +104,10 @@ const isDeleting = computed(() => deleteMutation.isPending.value)
 
 function goToAddMember() {
   router.push({ name: 'member-create' })
+}
+
+function goToMemberCard(id: number) {
+  router.push({ name: 'member-card', params: { memberId: id } })
 }
 
 function openMemberCard(id: number) {
@@ -162,6 +168,7 @@ function getDaysUntilExpiry(expiryDate: string) {
         <h1 class="text-3xl font-display font-bold tracking-tight">Members</h1>
         <p class="text-surface-400 mt-1">Manage all your gym members</p>
       </div>
+      <<<<<<< Updated upstream
       <Button
         size="lg"
         @click="goToAddMember"
@@ -170,6 +177,14 @@ function getDaysUntilExpiry(expiryDate: string) {
         <Plus class="w-5 h-5" />
         Add Member
       </Button>
+      =======
+      <div class="flex gap-2">
+        <Button @click="goToAddMember" class="gap-2">
+          <Plus class="w-4 h-4" />
+          Add Member
+        </Button>
+      </div>
+      >>>>>>> Stashed changes
     </div>
 
     <!-- Filters -->
@@ -262,7 +277,7 @@ function getDaysUntilExpiry(expiryDate: string) {
             </div>
           </div>
 
-          <!-- Actions row below info so they never overflow -->
+          <!-- Actions row -->
           <div class="flex gap-1 mt-2 justify-end">
             <Button
               variant="ghost"
@@ -273,12 +288,7 @@ function getDaysUntilExpiry(expiryDate: string) {
             >
               <CreditCard class="w-4 h-4" />
             </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              class="h-8 w-8"
-              @click="goToEditMember(member.id)"
-            >
+            <Button variant="ghost" size="icon" class="h-8 w-8" @click="goToEditMember(member.id)">
               <Pencil class="w-4 h-4" />
             </Button>
             <Button

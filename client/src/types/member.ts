@@ -4,6 +4,7 @@ export type MemberCardData = {
         photo_url: string | null
         code: string
         slug: string
+        phone: string | null
         membership_type: string
         start_date: string
         expiry_date: string

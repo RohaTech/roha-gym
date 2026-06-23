@@ -1,10 +1,7 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { Download } from 'lucide-vue-next'
+import { computed } from 'vue'
 import { useMemberCard } from '@/composables/useMemberCard'
-import { useCardDownload } from '@/composables/useCardDownload'
 import MembershipCard from '@/components/membership/MembershipCard.vue'
-import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
 const props = defineProps<{
@@ -18,12 +15,6 @@ const emit = defineEmits<{
 
 const memberId = computed(() => props.memberId ?? 0)
 const { data, isLoading, isError } = useMemberCard(memberId)
-
-const cardRef = ref<HTMLElement | null>(null)
-const { download, isDownloading } = useCardDownload(
-  cardRef,
-  computed(() => data.value?.member.name ?? ''),
-)
 </script>
 
 <template>
@@ -40,30 +31,22 @@ const { download, isDownloading } = useCardDownload(
         </div>
 
         <template v-else-if="data">
-          <!-- Outer div reserves layout space for the scaled card -->
           <div class="relative" style="width: calc(54mm * 1.6); height: calc(85.6mm * 1.6)">
-            <!-- Scale wrapper — visual only, does NOT affect cardRef capture -->
             <div class="absolute top-0 left-0 origin-top-left" style="transform: scale(1.6)">
-              <div ref="cardRef">
-                <MembershipCard
-                  :member-name="data.member.name"
-                  :member-photo="data.member.photo_url ?? ''"
-                  :member-code="data.member.code"
-                  :member-slug="data.member.slug"
-                  :membership-type="data.member.membership_type"
-                  :start-date="data.member.start_date"
-                  :expiry-date="data.member.expiry_date"
-                  :gym-logo="data.gym.logo_url ?? ''"
-                  :gym-name="data.gym.name"
-                />
-              </div>
+              <MembershipCard
+                :member-name="data.member.name"
+                :member-photo="data.member.photo_url ?? ''"
+                :member-code="data.member.code"
+                :member-slug="data.member.slug"
+                :member-phone="data.member.phone ?? ''"
+                :membership-type="data.member.membership_type"
+                :start-date="data.member.start_date"
+                :expiry-date="data.member.expiry_date"
+                :gym-logo="data.gym.logo_url ?? ''"
+                :gym-name="data.gym.name"
+              />
             </div>
           </div>
-
-          <Button class="gap-2 w-full" @click="download" :disabled="isDownloading">
-            <Download class="w-4 h-4" />
-            {{ isDownloading ? 'Downloading...' : 'Download Card' }}
-          </Button>
         </template>
       </div>
     </DialogContent>

@@ -1,4 +1,5 @@
 {
 	"kiroAgent.configureMCP": "Disabled",
-	"editor.suggest.showStatusBar": false
+	"editor.suggest.showStatusBar": false,
+	"claudeCodeChat.permissions.yoloMode": true
 }

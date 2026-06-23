@@ -95,7 +95,19 @@ const router = createRouter({
           component: () => import('@/views/CheckInView.vue'),
           meta: { requiresAuth: true, roles: ['user'] },
         },
+        {
+          path: 'analytics',
+          name: 'user-analytics',
+          component: () => import('@/views/UserAnalyticsView.vue'),
+          meta: { requiresAuth: true, roles: ['user'] },
+        },
       ],
+    },
+    {
+      path: '/members/:memberId/card',
+      name: 'member-card',
+      component: () => import('@/views/members/MemberCardView.vue'),
+      meta: { requiresAuth: true, roles: ['user'] },
     },
     {
       path: '/:pathMatch(.*)*',

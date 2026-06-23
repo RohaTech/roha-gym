@@ -7,6 +7,7 @@ use App\Models\MembershipType;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Translation\Message;
 
@@ -189,7 +190,7 @@ class MemberController extends Controller
         if ($request->hasFile('photo')) {
             // Delete old photo if exists
             if ($member->photo_path) {
-                \Storage::disk('public')->delete($member->photo_path);
+                Storage::disk('public')->delete($member->photo_path);
             }
             $photo = $request->file('photo');
             $name = $validated['full_name'] ?? $member->full_name;
@@ -217,7 +218,7 @@ class MemberController extends Controller
 
         // Delete photo if exists
         if ($member->photo_path) {
-            \Storage::disk('public')->delete($member->photo_path);
+            Storage::disk('public')->delete($member->photo_path);
         }
 
         $member->delete();
@@ -250,6 +251,7 @@ class MemberController extends Controller
                     : null,
                 'code'            => $memberModel->unique_code,
                 'slug'            => $memberModel->slug,
+                'phone'           => $memberModel->phone,
                 'membership_type' => $memberModel->membershipType->name,
                 'start_date'      => $memberModel->start_date->format('M d, Y'),
                 'expiry_date'     => $memberModel->expiry_date->format('M d, Y'),
@@ -261,18 +263,6 @@ class MemberController extends Controller
                     : null,
             ],
         ]);
-    }
-
-    /**
-     * Generate a unique 5-character code.
-     */
-    private function generateUniqueCode(): string
-    {
-        do {
-            $code = strtoupper(Str::random(5));
-        } while (Member::where('unique_code', $code)->exists());
-
-        return $code;
     }
 
     /**
