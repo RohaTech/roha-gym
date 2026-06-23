@@ -272,6 +272,7 @@ class English extends Lang {
             'profileAddressPlaceholder' => 'City, Sub-city, Area',
             'profileSaveChanges'     => 'Save Changes',
             'profileSaving'          => 'Saving...',
+            'profileCancel'          => 'Cancel',
             'profileLoading'         => 'Loading profile...',
             'profileLoadError'       => 'Failed to load profile.',
             'profileClickToUpload'   => 'Click to upload logo',

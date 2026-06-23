@@ -1,4 +1,5 @@
 import { computed, onUnmounted, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { toast } from 'vue-sonner'
 import axiosInstance from '@/api/axiosInstance'
@@ -11,6 +12,7 @@ import { storageUrl } from '@/constants'
 export function useGymProfile() {
   const authStore = useAuthStore()
   const queryClient = useQueryClient()
+  const route = useRouter()
 
   const form = ref<GymProfileFormData>({
     name: '',
@@ -132,6 +134,17 @@ export function useGymProfile() {
     logoInput.value?.click()
   }
 
+  function handleCancel() {
+    errors.value = {}
+    clearLogo()
+    if (profile.value) {
+      form.value.name = profile.value.name ?? ''
+      form.value.phone = profile.value.phone ?? ''
+      form.value.address = profile.value.address ?? ''
+    }
+    route.push({ name: 'user-dashboard' })
+  }
+
   const existingLogoUrl = computed(() =>
     profile.value?.logo_path ? storageUrl(profile.value.logo_path) : null,
   )
@@ -153,6 +166,7 @@ export function useGymProfile() {
     existingLogoUrl,
     clearError,
     handleSubmit,
+    handleCancel,
     handleLogoChange,
     clearLogo,
     triggerLogoUpload,

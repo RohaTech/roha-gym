@@ -17,6 +17,7 @@ const {
   existingLogoUrl,
   clearError,
   handleSubmit,
+  handleCancel,
   handleLogoChange,
   clearLogo,
   triggerLogoUpload,
@@ -157,6 +158,9 @@ const {
           <div class="flex flex-col gap-3">
             <Button type="submit" :disabled="isSubmitting" class="w-full">
               {{ isSubmitting ? $lang.profileSaving : $lang.profileSaveChanges }}
+            </Button>
+            <Button type="button" variant="outline" :disabled="isSubmitting" class="w-full" @click="handleCancel">
+              {{ $lang.profileCancel }}
             </Button>
           </div>
         </div>
