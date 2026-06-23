@@ -16,15 +16,9 @@ export function useCheckIn() {
     },
     onSuccess: (data) => {
       checkInStore.setResult(data)
-      setTimeout(() => {
-        checkInStore.reset()
-      }, 4000)
     },
     onError: () => {
       checkInStore.setResult({ success: false, reason: 'not_found' })
-      setTimeout(() => {
-        checkInStore.reset()
-      }, 4000)
     },
   })
 

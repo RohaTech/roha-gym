@@ -52,14 +52,14 @@ class CheckInController extends Controller
             'check_in_method' => $method,
         ]);
 
-        $remainingDays = now()->diffInDays($member->expiry_date);
+        $remainingDays = (int) ceil(max(0, now()->floatDiffInDays($member->expiry_date, false)));
         $lastCheckIn = $previousAttendance?->checked_in_at;
 
         return response()->json([
             'success' => true,
             'member'  => [
                 'name'           => $member->full_name,
-                'photo'          => $member->photo_path,
+                'photo'          => $member->photo_path ? asset('storage/' . $member->photo_path) : null,
                 'remaining_days' => $remainingDays,
                 'last_check_in'  => $lastCheckIn,
                 'today_count'    => $todayCount + 1,

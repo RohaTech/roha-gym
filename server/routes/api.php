@@ -1,8 +1,10 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\CheckInController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Lang\LanguageController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\MembershipTypeController;
@@ -36,6 +38,12 @@ Route::middleware('auth:sanctum')->group(function () {
     // Check-in
     Route::post('gyms/{gym}/check-in', [CheckInController::class, 'store']);
 
+    // Dashboard & Analytics
+    Route::get('gyms/{gym}/dashboard', [DashboardController::class, 'index']);
+    Route::get('gyms/{gym}/analytics', [AnalyticsController::class, 'index']);
+
     // Member card
     Route::get('gyms/{gym}/members/{member}/card-data', [MemberController::class, 'cardData']);
+    Route::get('gyms/{gym}/members/{member}/card-pdf', [MemberController::class, 'cardPdf']);
+    Route::post('gyms/{gym}/members/cards-pdf', [MemberController::class, 'batchCardsPdf']);
 });

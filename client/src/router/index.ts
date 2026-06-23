@@ -95,6 +95,12 @@ const router = createRouter({
           component: () => import('@/views/CheckInView.vue'),
           meta: { requiresAuth: true, roles: ['user'] },
         },
+        {
+          path: 'analytics',
+          name: 'user-analytics',
+          component: () => import('@/views/UserAnalyticsView.vue'),
+          meta: { requiresAuth: true, roles: ['user'] },
+        },
       ],
     },
     {

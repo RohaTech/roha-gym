@@ -1,24 +1,38 @@
+import type { ComputedRef } from 'vue'
 import { computed } from 'vue'
-import type { ComputedRef, Ref } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
 import axiosInstance from '@/api/axiosInstance'
 import { useAuthStore } from '@/store/authStore'
-import type { MemberCardData } from '@/types/member'
 
-export function useMemberCard(memberId: Ref<number> | ComputedRef<number>) {
-    const authStore = useAuthStore()
-    const gymId = computed(() => authStore.user?.id)
+interface MemberCardData {
+  member: {
+    name: string
+    photo_url: string | null
+    code: string
+    slug: string
+    phone: string | null
+    membership_type: string
+    start_date: string
+    expiry_date: string
+  }
+  gym: {
+    name: string
+    logo_url: string | null
+  }
+}
 
-    const { data, isLoading, isError } = useQuery({
-        queryKey: ['member-card', gymId, memberId],
-        queryFn: async () => {
-            const response = await axiosInstance.get<MemberCardData>(
-                `/gyms/${gymId.value}/members/${memberId.value}/card-data`
-            )
-            return response.data
-        },
-        enabled: computed(() => !!memberId.value && !!gymId.value),
-    })
+export function useMemberCard(memberId: ComputedRef<number>) {
+  const authStore = useAuthStore()
+  const gymId = computed(() => authStore.user?.id as number)
 
-    return { data, isLoading, isError }
+  return useQuery<MemberCardData>({
+    queryKey: ['member-card', gymId, memberId],
+    queryFn: async () => {
+      const { data } = await axiosInstance.get<MemberCardData>(
+        `/gyms/${gymId.value}/members/${memberId.value}/card-data`,
+      )
+      return data
+    },
+    enabled: computed(() => !!gymId.value && !!memberId.value),
+  })
 }
