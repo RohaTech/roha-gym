@@ -104,6 +104,12 @@ const router = createRouter({
       ],
     },
     {
+      path: '/members/:memberId/card',
+      name: 'member-card',
+      component: () => import('@/views/members/MemberCardView.vue'),
+      meta: { requiresAuth: true, roles: ['user'] },
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: () => import('@/views/NotFoundView.vue'),

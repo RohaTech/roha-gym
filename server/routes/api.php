@@ -38,6 +38,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Check-in
     Route::post('gyms/{gym}/check-in', [CheckInController::class, 'store']);
 
+    // Member card
+    Route::get('gyms/{gym}/members/{member}/card-data', [MemberController::class, 'cardData']);
+
     // Dashboard & Analytics
     Route::get('gyms/{gym}/dashboard', [DashboardController::class, 'index']);
     Route::get('gyms/{gym}/analytics', [AnalyticsController::class, 'index']);

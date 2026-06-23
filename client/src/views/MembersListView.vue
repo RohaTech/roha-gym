@@ -106,6 +106,10 @@ function goToAddMember() {
   router.push({ name: 'member-create' })
 }
 
+function goToMemberCard(id: number) {
+  router.push({ name: 'member-card', params: { memberId: id } })
+}
+
 function openMemberCard(id: number) {
   cardMemberId.value = id
   isCardDialogOpen.value = true

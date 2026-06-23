@@ -5,11 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Member;
 use App\Models\MembershipType;
 use App\Models\User;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response as HttpResponse;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Translation\Message;
 
@@ -192,7 +190,7 @@ class MemberController extends Controller
         if ($request->hasFile('photo')) {
             // Delete old photo if exists
             if ($member->photo_path) {
-                \Storage::disk('public')->delete($member->photo_path);
+                Storage::disk('public')->delete($member->photo_path);
             }
             $photo = $request->file('photo');
             $name = $validated['full_name'] ?? $member->full_name;
@@ -220,7 +218,7 @@ class MemberController extends Controller
 
         // Delete photo if exists
         if ($member->photo_path) {
-            \Storage::disk('public')->delete($member->photo_path);
+            Storage::disk('public')->delete($member->photo_path);
         }
 
         $member->delete();
@@ -265,104 +263,6 @@ class MemberController extends Controller
                     : null,
             ],
         ]);
-    }
-
-    /**
-     * Generate a unique 5-character code.
-     */
-    private function generateUniqueCode(): string
-    {
-        do {
-            $code = strtoupper(Str::random(5));
-        } while (Member::where('unique_code', $code)->exists());
-
-        return $code;
-    }
-
-    /**
-     * Generate a PDF for a single member's card.
-     */
-    public function cardPdf(Request $request, int $gym, int $member): HttpResponse
-    {
-        $memberModel = Member::where('id', $member)
-            ->where('gym_id', $gym)
-            ->firstOrFail();
-
-        if ($memberModel->gym_id !== $request->user()->id) {
-            abort(403);
-        }
-
-        $memberModel->load('gym', 'membershipType');
-
-        $data = $this->resolveCardImages($memberModel);
-
-        $pdf = Pdf::loadView('cards.member-card', array_merge($data, ['member' => $memberModel]));
-        $pdf->setPaper([0, 0, 153.09, 242.55], 'portrait');
-
-        $filename = Str::slug($memberModel->full_name) . '-membership-card.pdf';
-
-        return $pdf->download($filename);
-    }
-
-    /**
-     * Generate a batch PDF for multiple members' cards.
-     */
-    public function batchCardsPdf(Request $request, int $gym): HttpResponse
-    {
-        $validated = $request->validate([
-            'member_ids'   => 'required|array|min:1',
-            'member_ids.*' => 'integer',
-        ]);
-
-        $members = Member::whereIn('id', $validated['member_ids'])
-            ->where('gym_id', $gym)
-            ->with(['gym', 'membershipType'])
-            ->get();
-
-        if ($members->isEmpty()) {
-            abort(422, 'No valid members found.');
-        }
-
-        $membersData = $members->map(function (Member $m) {
-            return array_merge($this->resolveCardImages($m), ['member' => $m]);
-        });
-
-        $pdf = Pdf::loadView('cards.batch-cards', ['members' => $membersData]);
-        $pdf->setPaper('A4', 'portrait');
-
-        return $pdf->download('membership-cards.pdf');
-    }
-
-    /**
-     * Fetch images (logo, photo, QR) as base64 data URIs.
-     */
-    private function resolveCardImages(Member $member): array
-    {
-        $qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?data=' . urlencode($member->slug) . '&size=300x300';
-        $qrResponse = Http::timeout(10)->get($qrUrl);
-        $qrDataUri = $qrResponse->successful()
-            ? 'data:image/png;base64,' . base64_encode($qrResponse->body())
-            : null;
-
-        $logoDataUri = null;
-        if ($member->gym->logo_path) {
-            $path = storage_path('app/public/' . $member->gym->logo_path);
-            if (file_exists($path)) {
-                $mime = mime_content_type($path);
-                $logoDataUri = "data:{$mime};base64," . base64_encode(file_get_contents($path));
-            }
-        }
-
-        $photoDataUri = null;
-        if ($member->photo_path) {
-            $path = storage_path('app/public/' . $member->photo_path);
-            if (file_exists($path)) {
-                $mime = mime_content_type($path);
-                $photoDataUri = "data:{$mime};base64," . base64_encode(file_get_contents($path));
-            }
-        }
-
-        return compact('qrDataUri', 'logoDataUri', 'photoDataUri');
     }
 
     /**
