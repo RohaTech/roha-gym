@@ -15,6 +15,8 @@ import {
 } from 'lucide-vue-next'
 import { toast } from 'vue-sonner'
 import axiosInstance from '@/api/axiosInstance'
+import { storageUrl } from '@/constants'
+import MemberCardModal from '@/components/membership/MemberCardModal.vue'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -62,6 +64,8 @@ const searchQuery = ref('')
 const statusFilter = ref<string>('all')
 const deletingMember = ref<Member | null>(null)
 const isDeleteDialogOpen = ref(false)
+const cardMemberId = ref<number | null>(null)
+const isCardDialogOpen = ref(false)
 
 // Fetch members
 const { data: members, isLoading } = useQuery({
@@ -100,8 +104,9 @@ function goToAddMember() {
   router.push({ name: 'member-create' })
 }
 
-function goToMemberCard(id: number) {
-  router.push({ name: 'member-card', params: { memberId: id } })
+function openMemberCard(id: number) {
+  cardMemberId.value = id
+  isCardDialogOpen.value = true
 }
 
 function goToEditMember(id: number) {
@@ -152,13 +157,17 @@ function getDaysUntilExpiry(expiryDate: string) {
 <template>
   <div class="p-6 space-y-6">
     <!-- Header -->
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <h1 class="text-3xl font-display font-bold tracking-tight">Members</h1>
         <p class="text-surface-400 mt-1">Manage all your gym members</p>
       </div>
-      <Button @click="goToAddMember" class="gap-2">
-        <Plus class="w-4 h-4" />
+      <Button
+        size="lg"
+        @click="goToAddMember"
+        class="gap-2 shrink-0 self-start font-semibold shadow-lg shadow-brand-500/30 sm:self-auto"
+      >
+        <Plus class="w-5 h-5" />
         Add Member
       </Button>
     </div>
@@ -239,7 +248,7 @@ function getDaysUntilExpiry(expiryDate: string) {
             >
               <img
                 v-if="member.photo_path"
-                :src="`/storage/${member.photo_path}`"
+                :src="storageUrl(member.photo_path)"
                 :alt="member.full_name"
                 class="w-full h-full object-cover"
               />
@@ -259,7 +268,8 @@ function getDaysUntilExpiry(expiryDate: string) {
               variant="ghost"
               size="icon"
               class="h-8 w-8"
-              @click="goToMemberCard(member.id)"
+              title="View membership card"
+              @click="openMemberCard(member.id)"
             >
               <CreditCard class="w-4 h-4" />
             </Button>
@@ -297,19 +307,19 @@ function getDaysUntilExpiry(expiryDate: string) {
           </div>
 
           <!-- Phone -->
-          <div class="flex items-center gap-2 text-sm text-surface-300">
+          <div class="flex items-center gap-2 text-sm text-foreground/80">
             <Phone class="w-4 h-4" />
             <span>{{ member.phone }}</span>
           </div>
 
           <!-- Expiry -->
-          <div class="flex items-center gap-2 text-sm">
+          <div class="flex items-center gap-2 text-sm text-foreground/80">
             <Calendar class="w-4 h-4" />
             <span
               :class="
                 getDaysUntilExpiry(member.expiry_date) <= 7 && member.status === 'active'
-                  ? 'text-yellow-500'
-                  : 'text-surface-300'
+                  ? 'text-yellow-600 dark:text-yellow-500 font-medium'
+                  : 'text-foreground/80'
               "
             >
               Expires: {{ formatDate(member.expiry_date) }}
@@ -324,6 +334,13 @@ function getDaysUntilExpiry(expiryDate: string) {
         </CardContent>
       </Card>
     </div>
+
+    <!-- Membership Card Dialog -->
+    <MemberCardModal
+      :open="isCardDialogOpen"
+      :member-id="cardMemberId"
+      @update:open="(val) => (isCardDialogOpen = val)"
+    />
 
     <!-- Delete Confirmation Dialog -->
     <Dialog :open="isDeleteDialogOpen" @update:open="(val) => (isDeleteDialogOpen = val)">

@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { ArrowLeft, Upload, X, CalendarIcon } from 'lucide-vue-next'
 import { toast } from 'vue-sonner'
 import axiosInstance from '@/api/axiosInstance'
+import { storageUrl } from '@/constants'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -369,7 +370,7 @@ onUnmounted(() => {
                   @click="triggerPhotoUpload"
                 >
                   <img
-                    :src="`/storage/${existingPhotoPath}`"
+                    :src="storageUrl(existingPhotoPath)"
                     alt="Current photo"
                     class="w-full h-full object-cover"
                   />

@@ -90,10 +90,13 @@ class MemberController extends Controller
         $durationDays = intval($membershipType->duration_days);
         $expiryDate = $startDate->copy()->addDays($durationDays);
 
-        // Handle photo upload
+        // Handle photo upload — name the file after the member for easy identification
         $photoPath = null;
         if ($request->hasFile('photo')) {
-            $photoPath = $request->file('photo')->store('members', 'public');
+            $photo = $request->file('photo');
+            $filename = Str::slug($validated['full_name']) . '-' . Str::random(6)
+                . '.' . $photo->getClientOriginalExtension();
+            $photoPath = $photo->storeAs('members', $filename, 'public');
         }
 
         // Generate unique code (5 characters)
@@ -182,13 +185,17 @@ class MemberController extends Controller
                 ->toDateString();
         }
 
-        // Handle photo upload
+        // Handle photo upload — name the file after the member for easy identification
         if ($request->hasFile('photo')) {
             // Delete old photo if exists
             if ($member->photo_path) {
                 \Storage::disk('public')->delete($member->photo_path);
             }
-            $validated['photo_path'] = $request->file('photo')->store('members', 'public');
+            $photo = $request->file('photo');
+            $name = $validated['full_name'] ?? $member->full_name;
+            $filename = Str::slug($name) . '-' . Str::random(6)
+                . '.' . $photo->getClientOriginalExtension();
+            $validated['photo_path'] = $photo->storeAs('members', $filename, 'public');
         }
 
         $member->update($validated);

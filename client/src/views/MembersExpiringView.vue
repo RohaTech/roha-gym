@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { useQuery } from '@tanstack/vue-query'
 import { Calendar, Phone, User as UserIcon, AlertCircle } from 'lucide-vue-next'
 import axiosInstance from '@/api/axiosInstance'
+import { storageUrl } from '@/constants'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
@@ -134,7 +135,7 @@ function getUrgencyColor(days: number) {
             >
               <img
                 v-if="member.photo_path"
-                :src="`/storage/${member.photo_path}`"
+                :src="storageUrl(member.photo_path)"
                 :alt="member.full_name"
                 class="w-full h-full object-cover"
               />
@@ -167,7 +168,7 @@ function getUrgencyColor(days: number) {
               </div>
 
               <!-- Details -->
-              <div class="flex flex-wrap items-center gap-4 mt-3 text-sm text-surface-300">
+              <div class="flex flex-wrap items-center gap-4 mt-3 text-sm text-foreground/80">
                 <div class="flex items-center gap-2">
                   <Phone class="w-4 h-4" />
                   <span>{{ member.phone }}</span>

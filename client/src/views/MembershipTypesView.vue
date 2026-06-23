@@ -224,14 +224,17 @@ function formatDuration(days: number): string {
 <template>
   <div class="p-6 space-y-6">
     <!-- Header -->
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <h1 class="text-3xl font-display font-bold tracking-tight">Membership Types</h1>
         <p class="text-surface-400 mt-1">
           Create and manage membership plans for your gym
         </p>
       </div>
-      <Button @click="openCreateDialog" class="gap-2">
+      <Button
+        @click="openCreateDialog"
+        class="gap-2 shrink-0 self-start whitespace-nowrap sm:self-auto"
+      >
         <Plus class="w-4 h-4" />
         Add Membership Type
       </Button>

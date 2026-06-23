@@ -13,8 +13,6 @@ import {
   LayoutDashboard,
   LogOut,
   Settings,
-  ShieldCheck,
-  UserCog,
   Users,
 } from 'lucide-vue-next'
 import type { UserRole } from '@/types/roleTypes'
@@ -80,16 +78,6 @@ const ownerNav: NavGroup[] = [
         icon: CalendarCheck,
         isPrimary: true,
       },
-      { labelKey: 'sidebarAnalytics', url: '/app/analytics', icon: BarChart3 },
-      { labelKey: 'sidebarMembershipCards', url: '/app/members', icon: CreditCard },
-      { labelKey: 'sidebarSettings', url: '/app/settings', icon: Settings },
-    ],
-  },
-  {
-    labelKey: 'sidebarAccount',
-    items: [
-      { labelKey: 'sidebarProfile', url: '/app/account/profile', icon: UserCog },
-      { labelKey: 'sidebarPassword', url: '/app/account/password', icon: ShieldCheck },
     ],
   },
 ]
@@ -120,9 +108,6 @@ const adminNav: NavGroup[] = [
 ]
 
 const navGroups = computed(() => (props.role === 'admin' ? adminNav : ownerNav))
-const accountUrl = computed(() =>
-  props.role === 'admin' ? '/admin/account' : '/app/account/profile',
-)
 
 function isActive(item: NavItem) {
   if (item.items?.length) {
@@ -213,14 +198,6 @@ function handleLinkClick() {
 
     <SidebarFooter>
       <SidebarMenu>
-        <SidebarMenuItem>
-          <SidebarMenuButton as-child>
-            <RouterLink :to="accountUrl" @click="handleLinkClick">
-              <UserCog class="size-4" />
-              <span>{{ $lang.sidebarAccount }}</span>
-            </RouterLink>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
         <SidebarMenuItem>
           <SidebarMenuButton @click="authStore.logout">
             <LogOut class="size-4" />
