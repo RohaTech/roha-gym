@@ -13,6 +13,7 @@ import {
   LayoutDashboard,
   LogOut,
   Settings,
+  User,
   Users,
 } from 'lucide-vue-next'
 import type { UserRole } from '@/types/roleTypes'
@@ -78,7 +79,12 @@ const ownerNav: NavGroup[] = [
         icon: CalendarCheck,
         isPrimary: true,
       },
+      { labelKey: 'sidebarAnalytics', url: '/app/analytics', icon: BarChart3 },
     ],
+  },
+  {
+    labelKey: 'sidebarAccount',
+    items: [{ labelKey: 'sidebarProfile', url: '/app/profile', icon: User }],
   },
 ]
 

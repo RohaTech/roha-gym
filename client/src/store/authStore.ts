@@ -7,9 +7,12 @@ import type { UserRole } from '@/types/roleTypes'
 export interface User {
   id: number
   name: string
-  email: string
+  email: string | null
   phone?: string
+  address?: string
+  logo_path?: string | null
   role?: UserRole
+  status?: number
 }
 
 export const useAuthStore = defineStore(

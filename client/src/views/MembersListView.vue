@@ -168,7 +168,6 @@ function getDaysUntilExpiry(expiryDate: string) {
         <h1 class="text-3xl font-display font-bold tracking-tight">Members</h1>
         <p class="text-surface-400 mt-1">Manage all your gym members</p>
       </div>
-      <<<<<<< Updated upstream
       <Button
         size="lg"
         @click="goToAddMember"
@@ -177,14 +176,6 @@ function getDaysUntilExpiry(expiryDate: string) {
         <Plus class="w-5 h-5" />
         Add Member
       </Button>
-      =======
-      <div class="flex gap-2">
-        <Button @click="goToAddMember" class="gap-2">
-          <Plus class="w-4 h-4" />
-          Add Member
-        </Button>
-      </div>
-      >>>>>>> Stashed changes
     </div>
 
     <!-- Filters -->

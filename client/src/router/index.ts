@@ -101,6 +101,12 @@ const router = createRouter({
           component: () => import('@/views/UserAnalyticsView.vue'),
           meta: { requiresAuth: true, roles: ['user'] },
         },
+        {
+          path: 'profile',
+          name: 'gym-profile',
+          component: () => import('@/views/GymProfileView.vue'),
+          meta: { requiresAuth: true, roles: ['user'] },
+        },
       ],
     },
     {

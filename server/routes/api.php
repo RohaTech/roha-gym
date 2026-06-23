@@ -5,6 +5,7 @@ use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\CheckInController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\GymProfileController;
 use App\Http\Controllers\Lang\LanguageController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\MembershipTypeController;
@@ -27,6 +28,10 @@ Route::prefix('auth')->group(function () {
 
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
+    // Gym Profile
+    Route::get('gym/profile', [GymProfileController::class, 'show']);
+    Route::post('gym/profile', [GymProfileController::class, 'update']);
+
     // Membership Types
     Route::apiResource('membership-types', MembershipTypeController::class);
     

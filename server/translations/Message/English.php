@@ -49,6 +49,9 @@ class English extends Lang {
             'member_created' => 'Member added successfully',
             'member_updated' => 'Member updated successfully',
             'member_deleted' => 'Member deleted successfully',
+
+            // Gym Profile
+            'gym_profile_updated' => 'Gym profile updated successfully',
         ];
     }
 }
