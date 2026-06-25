@@ -219,7 +219,7 @@ function getDaysUntilExpiry(expiryDate: string) {
     <!-- Empty State -->
     <Card v-else-if="!members || members.length === 0" class="border-dashed border-2">
       <CardContent class="flex flex-col items-center justify-center py-16">
-        <div class="w-16 h-16 rounded-full bg-surface-800/50 flex items-center justify-center mb-4">
+        <div class="w-16 h-16 rounded-full   flex items-center justify-center mb-4">
           <Users class="w-8 h-8 text-surface-400" />
         </div>
         <h3 class="text-xl font-semibold mb-2">
@@ -314,9 +314,16 @@ function getDaysUntilExpiry(expiryDate: string) {
           </div>
 
           <!-- Expiry -->
-          <div class="flex items-center gap-2 text-sm text-foreground/80">
+          <div class="flex items-center gap-2 text-sm">
             <Calendar class="w-4 h-4" />
             <span
+              v-if="member.status === 'expired'"
+              class="text-red-600 dark:text-red-500 font-medium"
+            >
+              Expired on: {{ formatDate(member.expiry_date) }}
+            </span>
+            <span
+              v-else
               :class="
                 getDaysUntilExpiry(member.expiry_date) <= 7 && member.status === 'active'
                   ? 'text-yellow-600 dark:text-yellow-500 font-medium'

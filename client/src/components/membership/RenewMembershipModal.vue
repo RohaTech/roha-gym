@@ -209,7 +209,7 @@ function handleClose() {
         <!-- Current Status Info -->
         <div
           v-if="member"
-          class="p-3 rounded-lg bg-surface-800/50 border border-surface-700"
+          class="p-3 rounded-lg  border border-surface-700"
         >
           <div class="space-y-1">
             <div class="flex justify-between text-sm">

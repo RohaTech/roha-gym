@@ -263,7 +263,7 @@ function formatDuration(days: number): string {
     >
       <CardContent class="flex flex-col items-center justify-center py-16">
         <div
-          class="w-16 h-16 rounded-full bg-surface-800/50 flex items-center justify-center mb-4"
+          class="w-16 h-16 rounded-full   flex items-center justify-center mb-4"
         >
           <Calendar class="w-8 h-8 text-surface-400" />
         </div>

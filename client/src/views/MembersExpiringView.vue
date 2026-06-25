@@ -228,7 +228,7 @@ function handleRenewalComplete() {
     <!-- Empty State -->
     <Card v-else-if="!members || members.length === 0" class="border-dashed border-2">
       <CardContent class="flex flex-col items-center justify-center py-16">
-        <div class="w-16 h-16 rounded-full bg-surface-800/50 flex items-center justify-center mb-4">
+        <div class="w-16 h-16 rounded-full   flex items-center justify-center mb-4">
           <Calendar class="w-8 h-8 text-surface-400" />
         </div>
         <h3 class="text-xl font-semibold mb-2">No Members Found</h3>
@@ -275,6 +275,9 @@ function handleRenewalComplete() {
             <!-- Name and Status Badge -->
             <div class="flex-1 min-w-0">
               <h3 class="font-semibold text-lg truncate mb-1">{{ member.full_name }}</h3>
+                <span class="font-mono text-xs bg-surface-800 text-white px-2.5 py-1 rounded">
+                {{ member.unique_code }}
+              </span>
               <span
                 :class="[
                   'inline-flex px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap',
@@ -318,16 +321,6 @@ function handleRenewalComplete() {
                 </span>
                 <p class="text-foreground/80 font-medium">{{ formatDate(member.expiry_date) }}</p>
               </div>
-            </div>
-
-            <!-- Unique Code -->
-            <div class="flex items-center gap-2.5 text-sm">
-              <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0">
-                <span class="text-xs font-mono text-surface-400">#</span>
-              </div>
-              <span class="font-mono text-xs bg-surface-800 text-white px-2.5 py-1 rounded">
-                {{ member.unique_code }}
-              </span>
             </div>
           </div>
 

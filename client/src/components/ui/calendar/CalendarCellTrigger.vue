@@ -22,14 +22,16 @@ const forwardedProps = useForwardProps(delegatedProps)
       buttonVariants({ variant: 'ghost' }),
       'size-8 p-0 font-normal aria-selected:opacity-100 cursor-default',
       '[&[data-today]:not([data-selected])]:bg-gold-500/20 [&[data-today]:not([data-selected])]:text-gold-400 [&[data-today]:not([data-selected])]:font-semibold',
-      // Selected
-      'data-selected:bg-primary data-selected:text-primary-foreground data-selected:opacity-100 [&[data-selected]:hover]:bg-primary data-selected:hover:text-primary-foreground data-selected:focus:bg-primary data-selected:focus:text-primary-foreground',
+      // Selected - Enhanced highlighting
+      'data-selected:bg-brand-500 data-selected:text-white data-selected:font-bold data-selected:opacity-100 data-selected:shadow-md',
+      '[&[data-selected]:hover]:bg-brand-600 data-selected:hover:text-white',
+      'data-selected:focus:bg-brand-600 data-selected:focus:text-white data-selected:focus:ring-2 data-selected:focus:ring-brand-500 data-selected:focus:ring-offset-2',
       // Disabled
       'data-disabled:text-muted-foreground data-disabled:opacity-50',
       // Unavailable
       'data-unavailable:text-destructive-foreground data-unavailable:line-through',
       // Outside months
-      'data-outside-view:text-muted-foreground',
+      'data-outside-view:text-muted-foreground data-outside-view:opacity-50',
       props.class,
     )"
     v-bind="forwardedProps"
