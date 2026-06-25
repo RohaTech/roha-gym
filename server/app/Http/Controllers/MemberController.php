@@ -122,6 +122,7 @@ class MemberController extends Controller
             ->firstOrFail();
 
         // Calculate expiry date - ensure duration_days is an integer
+        // If membership is 7 days starting Jan 1, it expires END of Jan 7 (start of Jan 8)
         $startDate = \Carbon\Carbon::parse($validated['start_date']);
         $durationDays = intval($membershipType->duration_days);
         $expiryDate = $startDate->copy()->addDays($durationDays);
@@ -212,6 +213,7 @@ class MemberController extends Controller
                 ? \Carbon\Carbon::parse($validated['start_date'])
                 : \Carbon\Carbon::parse($member->start_date);
 
+            // If membership is 7 days starting Jan 1, it expires END of Jan 7 (start of Jan 8)
             $durationDays = intval($membershipType->duration_days);
             $validated['expiry_date'] = $startDate->copy()
                 ->addDays($durationDays)
@@ -220,6 +222,7 @@ class MemberController extends Controller
             // If only start date changed, recalculate expiry with existing membership type
             $member->load('membershipType');
             $startDate = \Carbon\Carbon::parse($validated['start_date']);
+            // If membership is 7 days starting Jan 1, it expires END of Jan 7 (start of Jan 8)
             $durationDays = intval($member->membershipType->duration_days);
             $validated['expiry_date'] = $startDate->copy()
                 ->addDays($durationDays)

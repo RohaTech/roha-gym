@@ -109,6 +109,7 @@ const selectedMembershipType = computed(() => {
 })
 
 // Calculate new expiry date
+// Logic: If membership is 7 days starting Jan 1, it expires END of Jan 7 (start of Jan 8)
 const calculatedExpiryDate = computed(() => {
   if (!props.member || !selectedMembershipType.value || !selectedStartDate.value) return null
 
@@ -128,10 +129,12 @@ const calculatedExpiryDate = computed(() => {
     // Add duration to the later of: current expiry or today
     const baseDate = currentExpiry > today ? currentExpiry : today
     newExpiryDate = new Date(baseDate)
+    // Add full duration - e.g., 7 days starting Jan 1 = expires Jan 8 (covers Jan 1-7)
     newExpiryDate.setDate(newExpiryDate.getDate() + selectedMembershipType.value.duration_days)
   } else {
     // Start date is in the future - calculate from that date
     newExpiryDate = new Date(startDate)
+    // Add full duration - e.g., 7 days starting Jan 1 = expires Jan 8 (covers Jan 1-7)
     newExpiryDate.setDate(newExpiryDate.getDate() + selectedMembershipType.value.duration_days)
   }
 
