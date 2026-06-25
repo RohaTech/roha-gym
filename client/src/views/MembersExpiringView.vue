@@ -2,11 +2,20 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuery } from '@tanstack/vue-query'
-import { Calendar, Phone, User as UserIcon, AlertCircle } from 'lucide-vue-next'
+import { Calendar, Phone, User as UserIcon, AlertCircle, Filter } from 'lucide-vue-next'
 import axiosInstance from '@/api/axiosInstance'
 import { storageUrl } from '@/constants'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import RenewMembershipModal from '@/components/membership/RenewMembershipModal.vue'
 
 interface MembershipType {
   id: number
@@ -26,18 +35,49 @@ interface Member {
   status: 'active' | 'expired' | 'suspended'
   notes: string | null
   membership_type: MembershipType
+  membership_type_id: number
   created_at: string
 }
 
 const router = useRouter()
 
-// Fetch expiring members (7 days)
-const { data: expiringMembers, isLoading } = useQuery({
-  queryKey: ['members-expiring'],
+// Filter state: 'all', 'expiring', 'expired'
+const filterType = ref<'all' | 'expiring' | 'expired'>('all')
+
+// Renewal modal state
+const renewModalOpen = ref(false)
+const selectedMemberForRenewal = ref<Member | null>(null)
+
+// Fetch members based on filter
+const {
+  data: members,
+  isLoading,
+  refetch,
+} = useQuery({
+  queryKey: ['members-expiring', filterType],
   queryFn: async () => {
-    const response = await axiosInstance.get<Member[]>('/members/expiring?days=7')
+    const response = await axiosInstance.get<Member[]>(
+      `/members/expiring?days=7&filter=${filterType.value}`,
+    )
     return response.data
   },
+})
+
+// Computed stats
+const expiringCount = computed(() => {
+  if (!members.value) return 0
+  return members.value.filter((m) => {
+    const days = getDaysUntilExpiry(m.expiry_date)
+    return days >= 0
+  }).length
+})
+
+const expiredCount = computed(() => {
+  if (!members.value) return 0
+  return members.value.filter((m) => {
+    const days = getDaysUntilExpiry(m.expiry_date)
+    return days < 0
+  }).length
 })
 
 function formatDate(date: string) {
@@ -50,16 +90,37 @@ function formatDate(date: string) {
 
 function getDaysUntilExpiry(expiryDate: string) {
   const today = new Date()
+  today.setHours(0, 0, 0, 0)
   const expiry = new Date(expiryDate)
+  expiry.setHours(0, 0, 0, 0)
   const diffTime = expiry.getTime() - today.getTime()
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
   return diffDays
 }
 
 function getUrgencyColor(days: number) {
-  if (days <= 0) return 'text-red-500 bg-red-500/10'
+  if (days < 0) return 'text-red-600 bg-red-500/10'
+  if (days === 0) return 'text-red-500 bg-red-500/10'
   if (days <= 3) return 'text-orange-500 bg-orange-500/10'
   return 'text-yellow-500 bg-yellow-500/10'
+}
+
+function getStatusText(days: number) {
+  if (days < 0) {
+    const absDays = Math.abs(days)
+    return `Expired ${absDays} ${absDays === 1 ? 'day' : 'days'} ago`
+  }
+  if (days === 0) return 'Expires today'
+  return `${days} ${days === 1 ? 'day' : 'days'} left`
+}
+
+function openRenewModal(member: Member) {
+  selectedMemberForRenewal.value = member
+  renewModalOpen.value = true
+}
+
+function handleRenewalComplete() {
+  refetch()
 }
 </script>
 
@@ -67,28 +128,87 @@ function getUrgencyColor(days: number) {
   <div class="p-6 space-y-6">
     <!-- Header -->
     <div>
-      <h1 class="text-3xl font-display font-bold tracking-tight">Expiring Soon</h1>
-      <p class="text-surface-400 mt-1">Members with 7 days or less remaining on their membership</p>
+      <h1 class="text-3xl font-display font-bold tracking-tight">Expiring & Expired Members</h1>
+      <p class="text-surface-400 mt-1">
+        Members expiring in the next 7 days or expired in the last 30 days
+      </p>
     </div>
 
-    <!-- Stats Card -->
-    <Card class="bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border-yellow-500/20">
-      <CardContent class="flex items-center gap-4 py-6">
-        <div
-          class="w-12 h-12 rounded-full bg-yellow-500/20 flex items-center justify-center flex-shrink-0"
-        >
-          <AlertCircle class="w-6 h-6 text-yellow-500" />
-        </div>
-        <div>
-          <p class="text-2xl font-bold">
-            {{ isLoading ? '...' : expiringMembers?.length || 0 }}
-          </p>
-          <p class="text-sm text-surface-400">
-            Member{{ (expiringMembers?.length || 0) !== 1 ? 's' : '' }} expiring in the next 7 days
-          </p>
-        </div>
-      </CardContent>
-    </Card>
+    <!-- Filter and Stats Row -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <!-- Filter Dropdown -->
+      <Card class="border-surface-200 dark:border-surface-800">
+        <CardContent class="py-4">
+          <div class="space-y-2">
+            <Label class="text-sm font-medium flex items-center gap-2">
+              <Filter class="w-4 h-4" />
+              Filter View
+            </Label>
+            <Select v-model="filterType">
+              <SelectTrigger>
+                <SelectValue placeholder="Select filter" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Members</SelectItem>
+                <SelectItem value="expiring">Expiring Soon</SelectItem>
+                <SelectItem value="expired">Recently Expired</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+
+      <!-- Stats Cards -->
+      <Card class="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border-yellow-500/20">
+        <CardContent class="py-4">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 rounded-lg bg-yellow-500/20 flex items-center justify-center flex-shrink-0"
+            >
+              <AlertCircle class="w-5 h-5 text-yellow-500" />
+            </div>
+            <div>
+              <p class="text-2xl font-bold">{{ isLoading ? '...' : expiringCount }}</p>
+              <p class="text-xs text-surface-400">Expiring Soon</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card class="bg-gradient-to-br from-red-500/10 to-red-600/10 border-red-500/20">
+        <CardContent class="py-4">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center flex-shrink-0"
+            >
+              <Calendar class="w-5 h-5 text-red-500" />
+            </div>
+            <div>
+              <p class="text-2xl font-bold">{{ isLoading ? '...' : expiredCount }}</p>
+              <p class="text-xs text-surface-400">Recently Expired</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card class="border-surface-200 dark:border-surface-800">
+        <CardContent class="py-4">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 rounded-lg bg-brand-500/20 flex items-center justify-center flex-shrink-0"
+            >
+              <UserIcon class="w-5 h-5 text-brand-500" />
+            </div>
+            <div>
+              <p class="text-2xl font-bold">
+                {{ isLoading ? '...' : members?.length || 0 }}
+              </p>
+              <p class="text-xs text-surface-400">Total Showing</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
 
     <!-- Loading State -->
     <div v-if="isLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -106,32 +226,42 @@ function getUrgencyColor(days: number) {
     </div>
 
     <!-- Empty State -->
-    <Card v-else-if="!expiringMembers || expiringMembers.length === 0" class="border-dashed border-2">
+    <Card v-else-if="!members || members.length === 0" class="border-dashed border-2">
       <CardContent class="flex flex-col items-center justify-center py-16">
-        <div
-          class="w-16 h-16 rounded-full bg-surface-800/50 flex items-center justify-center mb-4"
-        >
+        <div class="w-16 h-16 rounded-full bg-surface-800/50 flex items-center justify-center mb-4">
           <Calendar class="w-8 h-8 text-surface-400" />
         </div>
-        <h3 class="text-xl font-semibold mb-2">No Expiring Memberships</h3>
+        <h3 class="text-xl font-semibold mb-2">No Members Found</h3>
         <p class="text-surface-400 text-center max-w-md">
-          Great! No memberships are expiring in the next 7 days.
+          {{
+            filterType === 'expiring'
+              ? 'No memberships are expiring in the next 7 days.'
+              : filterType === 'expired'
+                ? 'No memberships expired in the last 30 days.'
+                : 'No expiring or expired memberships found.'
+          }}
         </p>
       </CardContent>
     </Card>
 
-    <!-- Expiring Members List -->
-    <div v-else class="space-y-4">
+    <!-- Members List -->
+    <div v-else class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
       <Card
-        v-for="member in expiringMembers"
+        v-for="member in members"
         :key="member.id"
-        class="hover:border-yellow-500/50 transition-colors"
+        :class="[
+          'transition-all hover:shadow-lg',
+          getDaysUntilExpiry(member.expiry_date) < 0
+            ? 'hover:border-red-500/50 border-red-500/20'
+            : 'hover:border-yellow-500/50 border-yellow-500/20',
+        ]"
       >
-        <CardContent class="py-4">
-          <div class="flex items-center gap-4">
+        <CardContent class="p-4">
+          <!-- Header with Avatar and Name -->
+          <div class="flex items-start gap-3 mb-4">
             <!-- Avatar -->
             <div
-              class="w-14 h-14 rounded-full bg-surface-800 flex items-center justify-center flex-shrink-0 overflow-hidden"
+              class="w-16 h-16 rounded-full bg-surface-800 flex items-center justify-center flex-shrink-0 overflow-hidden ring-2 ring-surface-700"
             >
               <img
                 v-if="member.photo_path"
@@ -139,57 +269,82 @@ function getUrgencyColor(days: number) {
                 :alt="member.full_name"
                 class="w-full h-full object-cover"
               />
-              <UserIcon v-else class="w-7 h-7 text-surface-400" />
+              <UserIcon v-else class="w-8 h-8 text-surface-400" />
             </div>
 
-            <!-- Member Info -->
+            <!-- Name and Status Badge -->
             <div class="flex-1 min-w-0">
-              <div class="flex items-start justify-between gap-4">
-                <div class="flex-1 min-w-0">
-                  <h3 class="font-semibold text-lg truncate">{{ member.full_name }}</h3>
-                  <p class="text-sm text-surface-400">{{ member.membership_type.name }}</p>
-                </div>
+              <h3 class="font-semibold text-lg truncate mb-1">{{ member.full_name }}</h3>
+              <span
+                :class="[
+                  'inline-flex px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap',
+                  getUrgencyColor(getDaysUntilExpiry(member.expiry_date)),
+                ]"
+              >
+                {{ getStatusText(getDaysUntilExpiry(member.expiry_date)) }}
+              </span>
+            </div>
+          </div>
 
-                <!-- Urgency Badge -->
-                <span
-                  :class="[
-                    'px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap',
-                    getUrgencyColor(getDaysUntilExpiry(member.expiry_date)),
-                  ]"
-                >
-                  {{
-                    getDaysUntilExpiry(member.expiry_date) === 0
-                      ? 'Expires today'
-                      : getDaysUntilExpiry(member.expiry_date) < 0
-                        ? 'Expired'
-                        : `${getDaysUntilExpiry(member.expiry_date)} days left`
-                  }}
-                </span>
+          <!-- Membership Type Badge -->
+          <div class="mb-3">
+            <div
+              class="inline-flex items-center px-3 py-1.5 rounded-md bg-brand-500/10 border border-brand-500/20"
+            >
+              <span class="text-sm font-medium text-brand-500">
+                {{ member.membership_type.name }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Details Section -->
+          <div class="space-y-2.5 mb-4">
+            <!-- Phone -->
+            <div class="flex items-center gap-2.5 text-sm">
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Phone class="w-4 h-4 text-surface-400" />
               </div>
+              <span class="text-foreground/80 truncate">{{ member.phone }}</span>
+            </div>
 
-              <!-- Details -->
-              <div class="flex flex-wrap items-center gap-4 mt-3 text-sm text-foreground/80">
-                <div class="flex items-center gap-2">
-                  <Phone class="w-4 h-4" />
-                  <span>{{ member.phone }}</span>
-                </div>
-                <div class="flex items-center gap-2">
-                  <Calendar class="w-4 h-4" />
-                  <span>Expires: {{ formatDate(member.expiry_date) }}</span>
-                </div>
-                <div class="flex items-center gap-2">
-                  <span class="text-xs font-mono bg-surface-800 px-2 py-1 rounded">
-                    {{ member.unique_code }}
-                  </span>
-                </div>
+            <!-- Expiry Date -->
+            <div class="flex items-center gap-2.5 text-sm">
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Calendar class="w-4 h-4 text-surface-400" />
+              </div>
+              <div class="flex-1 min-w-0">
+                <span class="text-surface-400 text-xs">
+                  {{ getDaysUntilExpiry(member.expiry_date) < 0 ? 'Expired on' : 'Expires on' }}
+                </span>
+                <p class="text-foreground/80 font-medium">{{ formatDate(member.expiry_date) }}</p>
               </div>
             </div>
 
-            <!-- Action Button -->
-            <Button variant="outline" size="sm" class="flex-shrink-0">Renew</Button>
+            <!-- Unique Code -->
+            <div class="flex items-center gap-2.5 text-sm">
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0">
+                <span class="text-xs font-mono text-surface-400">#</span>
+              </div>
+              <span class="font-mono text-xs bg-surface-800 text-white px-2.5 py-1 rounded">
+                {{ member.unique_code }}
+              </span>
+            </div>
           </div>
+
+          <!-- Action Buttons -->
+          <Button variant="default" size="sm" class="flex-1" @click="openRenewModal(member)">
+            Renew
+          </Button>
         </CardContent>
       </Card>
     </div>
+
+    <!-- Renewal Modal -->
+    <RenewMembershipModal
+      :member="selectedMemberForRenewal"
+      :open="renewModalOpen"
+      @update:open="renewModalOpen = $event"
+      @renewed="handleRenewalComplete"
+    />
   </div>
 </template>

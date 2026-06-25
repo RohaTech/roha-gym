@@ -44,22 +44,57 @@ class MemberController extends Controller
     }
 
     /**
-     * Get members expiring soon (within 7 days).
+     * Get members expiring soon or recently expired.
+     * 
+     * Supports filtering by:
+     * - 'expiring': Members expiring within the next X days (default 7)
+     * - 'expired': Members expired in the last 30 days
+     * - 'all': Both expiring and recently expired members
      */
     public function expiring(Request $request): JsonResponse
     {
         $gymId = $request->user()->id;
         $daysAhead = intval($request->input('days', 7));
+        $filter = $request->input('filter', 'all'); // 'expiring', 'expired', or 'all'
 
-        $members = Member::where('gym_id', $gymId)
-            ->where('status', 'active')
-            ->whereBetween('expiry_date', [
-                now()->toDateString(),
-                now()->addDays($daysAhead)->toDateString(),
-            ])
-            ->with('membershipType:id,name,duration_days')
-            ->orderBy('expiry_date', 'asc')
-            ->get();
+        $query = Member::where('gym_id', $gymId)
+            ->with('membershipType:id,name,duration_days');
+
+        if ($filter === 'expiring') {
+            // Members expiring in the next X days (active status)
+            $query->where('status', 'active')
+                ->whereBetween('expiry_date', [
+                    now()->toDateString(),
+                    now()->addDays($daysAhead)->toDateString(),
+                ]);
+        } elseif ($filter === 'expired') {
+            // Members expired in the last 30 days
+            $query->whereBetween('expiry_date', [
+                now()->subDays(30)->toDateString(),
+                now()->subDay()->toDateString(),
+            ]);
+        } else {
+            // All: both expiring soon and recently expired
+            $query->where(function ($q) use ($daysAhead) {
+                $q->where(function ($subQ) use ($daysAhead) {
+                    // Expiring soon
+                    $subQ->where('status', 'active')
+                        ->whereBetween('expiry_date', [
+                            now()->toDateString(),
+                            now()->addDays($daysAhead)->toDateString(),
+                        ]);
+                })
+                ->orWhere(function ($subQ) {
+                    // Recently expired (last 30 days)
+                    $subQ->whereBetween('expiry_date', [
+                        now()->subDays(30)->toDateString(),
+                        now()->subDay()->toDateString(),
+                    ]);
+                });
+            });
+        }
+
+        $members = $query->orderBy('expiry_date', 'asc')->get();
 
         return response()->json($members);
     }
@@ -154,6 +189,7 @@ class MemberController extends Controller
             'phone' => 'sometimes|required|string|max:20',
             'membership_type_id' => 'sometimes|required|exists:membership_types,id',
             'start_date' => 'sometimes|required|date',
+            'expiry_date' => 'sometimes|required|date',
             'gender' => 'nullable|in:male,female,other',
             'status' => 'sometimes|in:active,expired,suspended',
             'notes' => 'nullable|string|max:1000',
@@ -162,8 +198,12 @@ class MemberController extends Controller
 
         $gymId = $request->user()->id;
 
+        // If expiry_date is provided directly (e.g., from renewal modal), use it
+        if (isset($validated['expiry_date'])) {
+            // Expiry date is explicitly provided, skip auto-calculation
+        }
         // If membership type changed, verify it belongs to this gym and recalculate expiry
-        if (isset($validated['membership_type_id'])) {
+        elseif (isset($validated['membership_type_id'])) {
             $membershipType = MembershipType::where('id', $validated['membership_type_id'])
                 ->where('gym_id', $gymId)
                 ->firstOrFail();

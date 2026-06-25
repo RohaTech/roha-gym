@@ -1,4 +1,4 @@
-export const API_URL = 'https://gym-back.rohatechs.com/api'
+export const API_URL = 'http://localhost:8001/api'
 
 // Base URL for files served from Laravel's public storage disk.
 // Derived from API_URL so it stays in sync (e.g. https://gym-back.rohatechs.com/storage).
