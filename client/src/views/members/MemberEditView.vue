@@ -33,7 +33,7 @@ interface MemberDetail {
   full_name: string
   phone: string
   membership_type_id: number
-  start_date: string
+  start_date: string | undefined
   gender: string | null
   notes: string | null
   photo_path: string | null
@@ -67,7 +67,11 @@ const photoInput = ref<HTMLInputElement | null>(null)
 const errors = ref<Record<string, string>>({})
 
 const startDateValue = computed({
-  get: () => form.value.start_date ? parseDate(form.value.start_date.split('T')[0]) : undefined,
+  get: () => {
+    if (!form.value.start_date) return undefined
+    const datePart = form.value.start_date.split('T')[0]
+    return datePart ? parseDate(datePart) : undefined
+  },
   set: (val) => {
     form.value.start_date = val ? val.toString() : ''
   },
@@ -88,7 +92,7 @@ watch(memberData, (data) => {
   form.value.full_name = data.full_name
   form.value.phone = data.phone
   form.value.membership_type_id = data.membership_type_id.toString()
-  form.value.start_date = data.start_date.split('T')[0]
+  form.value.start_date = data.start_date ? (data.start_date.split('T')[0] || '') : ''
   form.value.gender = data.gender ?? ''
   form.value.notes = data.notes ?? ''
   form.value.status = data.status
