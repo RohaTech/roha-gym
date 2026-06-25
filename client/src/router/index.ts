@@ -55,6 +55,10 @@ const router = createRouter({
       children: [
         {
           path: '',
+          redirect: { name: 'user-dashboard' },
+        },
+        {
+          path: 'dashboard',
           name: 'user-dashboard',
           component: () => import('@/views/UserDashboardView.vue'),
           meta: { requiresAuth: true, roles: ['user'] },

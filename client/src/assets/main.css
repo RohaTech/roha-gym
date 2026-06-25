@@ -34,6 +34,12 @@
   --color-energy-500: oklch(0.72 0.19 48);
   --color-energy-600: oklch(0.65 0.20 44);
 
+  /* ── Gold ── */
+  --color-gold-300: oklch(0.88 0.14 90);
+  --color-gold-400: oklch(0.82 0.16 86);
+  --color-gold-500: oklch(0.75 0.17 82);
+  --color-gold-600: oklch(0.66 0.16 80);
+
   /* ── Success / Warning / Danger ── */
   --color-success-500: oklch(0.72 0.17 155);
   --color-warning-500: oklch(0.80 0.15 80);

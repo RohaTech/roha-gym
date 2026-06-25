@@ -40,7 +40,6 @@ type NavItem = {
   labelKey: string
   url: string
   icon?: LucideIcon
-  isPrimary?: boolean
   items?: NavItem[]
 }
 
@@ -61,7 +60,7 @@ const ownerNav: NavGroup[] = [
   {
     labelKey: 'sidebarMain',
     items: [
-      { labelKey: 'sidebarDashboard', url: '/app', icon: LayoutDashboard },
+      { labelKey: 'sidebarDashboard', url: '/app/dashboard', icon: LayoutDashboard },
       {
         labelKey: 'sidebarMembers',
         url: '/app/members',
@@ -73,12 +72,7 @@ const ownerNav: NavGroup[] = [
         ],
       },
       { labelKey: 'sidebarMembershipTypes', url: '/app/memberships', icon: IdCard },
-      {
-        labelKey: 'sidebarCheckIn',
-        url: '/app/check-in',
-        icon: CalendarCheck,
-        isPrimary: true,
-      },
+      { labelKey: 'sidebarCheckIn', url: '/app/check-in', icon: CalendarCheck },
       { labelKey: 'sidebarAnalytics', url: '/app/analytics', icon: BarChart3 },
     ],
   },
@@ -115,11 +109,15 @@ const adminNav: NavGroup[] = [
 
 const navGroups = computed(() => (props.role === 'admin' ? adminNav : ownerNav))
 
+function matchesRoute(url: string) {
+  return route.path === url || route.path.startsWith(url + '/')
+}
+
 function isActive(item: NavItem) {
   if (item.items?.length) {
-    return item.items.some((child) => route.path.startsWith(child.url))
+    return item.items.some((child) => matchesRoute(child.url))
   }
-  return route.path.startsWith(item.url)
+  return matchesRoute(item.url)
 }
 
 function handleLinkClick() {
@@ -163,7 +161,7 @@ function handleLinkClick() {
           >
             <SidebarMenuItem>
               <CollapsibleTrigger v-if="item.items" as-child>
-                <SidebarMenuButton :tooltip="$lang[item.labelKey]">
+                <SidebarMenuButton :tooltip="$lang[item.labelKey]" :is-active="isActive(item)">
                   <component :is="item.icon" v-if="item.icon" />
                   <span>{{ $lang[item.labelKey] }}</span>
                   <ChevronRight
@@ -171,15 +169,7 @@ function handleLinkClick() {
                   />
                 </SidebarMenuButton>
               </CollapsibleTrigger>
-              <SidebarMenuButton
-                v-else
-                as-child
-                :class="
-                  item.isPrimary
-                    ? 'bg-sidebar-primary/10 text-sidebar-primary hover:bg-sidebar-primary/20'
-                    : ''
-                "
-              >
+              <SidebarMenuButton v-else as-child :is-active="isActive(item)">
                 <RouterLink :to="item.url" @click="handleLinkClick">
                   <component :is="item.icon" v-if="item.icon" />
                   <span>{{ $lang[item.labelKey] }}</span>
@@ -188,7 +178,7 @@ function handleLinkClick() {
               <CollapsibleContent v-if="item.items">
                 <SidebarMenuSub>
                   <SidebarMenuSubItem v-for="subItem in item.items" :key="subItem.labelKey">
-                    <SidebarMenuSubButton as-child>
+                    <SidebarMenuSubButton as-child :is-active="route.path === subItem.url">
                       <RouterLink :to="subItem.url" @click="handleLinkClick">
                         <span>{{ $lang[subItem.labelKey] }}</span>
                       </RouterLink>
