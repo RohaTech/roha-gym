@@ -48,6 +48,8 @@ const memberId = computed(() => Number(route.params.memberId))
 
 const df = new DateFormatter('en-US', { dateStyle: 'long' })
 
+const startDateOpen = ref(false)
+
 const form = ref({
   full_name: '',
   phone: '',
@@ -65,7 +67,7 @@ const photoInput = ref<HTMLInputElement | null>(null)
 const errors = ref<Record<string, string>>({})
 
 const startDateValue = computed({
-  get: () => form.value.start_date ? parseDate(form.value.start_date) : undefined,
+  get: () => form.value.start_date ? parseDate(form.value.start_date.split('T')[0]) : undefined,
   set: (val) => {
     form.value.start_date = val ? val.toString() : ''
   },
@@ -86,7 +88,7 @@ watch(memberData, (data) => {
   form.value.full_name = data.full_name
   form.value.phone = data.phone
   form.value.membership_type_id = data.membership_type_id.toString()
-  form.value.start_date = data.start_date
+  form.value.start_date = data.start_date.split('T')[0]
   form.value.gender = data.gender ?? ''
   form.value.notes = data.notes ?? ''
   form.value.status = data.status
@@ -290,7 +292,7 @@ onUnmounted(() => {
               <!-- Start Date -->
               <div class="space-y-2 flex flex-col">
                 <Label>Start Date *</Label>
-                <Popover>
+                <Popover v-model:open="startDateOpen">
                   <PopoverTrigger as-child>
                     <Button
                       variant="outline"
@@ -305,7 +307,7 @@ onUnmounted(() => {
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent class="w-auto p-0">
-                    <Calendar v-model="startDateValue" initial-focus layout="month-and-year" />
+                    <Calendar v-model="startDateValue" initial-focus layout="month-and-year" @update:model-value="startDateOpen = false" />
                   </PopoverContent>
                 </Popover>
                 <p v-if="errors.start_date" class="text-sm text-danger-500">{{ errors.start_date }}</p>
