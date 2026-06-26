@@ -33,7 +33,7 @@ class AuthController extends Controller
             'phone'     => $request->phone,
             'password'  => Hash::make($request->password),
             'address'   => $request->address,
-            'status'    => USER_STATUS_ACTIVE,
+            'status'    => USER_STATUS_PENDING, // New gyms await admin approval
             'logo_path' => $logoPath,
             'role'      => 'user', // Default role for new registrations
         ]);
@@ -61,7 +61,9 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
-        if ($user->status !== USER_STATUS_ACTIVE) {
+        // Suspended/inactive gyms are blocked; pending gyms may log in to a
+        // limited "awaiting approval" state.
+        if ((int) $user->status === USER_STATUS_INACTIVE) {
             Auth::logout();
             return response()->json([
                 'message' => Message::get('account_inactive'),

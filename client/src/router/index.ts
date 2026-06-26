@@ -46,6 +46,30 @@ const router = createRouter({
           component: () => import('@/views/AdminDashboardView.vue'),
           meta: { requiresAuth: true, roles: ['admin'] },
         },
+        {
+          path: 'gyms',
+          name: 'admin-gyms',
+          component: () => import('@/views/AdminGymsView.vue'),
+          meta: { requiresAuth: true, roles: ['admin'] },
+        },
+        {
+          path: 'gyms/new',
+          name: 'admin-gym-create',
+          component: () => import('@/views/AdminGymFormView.vue'),
+          meta: { requiresAuth: true, roles: ['admin'] },
+        },
+        {
+          path: 'gyms/:gymId/edit',
+          name: 'admin-gym-edit',
+          component: () => import('@/views/AdminGymFormView.vue'),
+          meta: { requiresAuth: true, roles: ['admin'] },
+        },
+        {
+          path: 'subscriptions',
+          name: 'admin-subscriptions',
+          component: () => import('@/views/AdminSubscriptionsView.vue'),
+          meta: { requiresAuth: true, roles: ['admin'] },
+        },
       ],
     },
     {
