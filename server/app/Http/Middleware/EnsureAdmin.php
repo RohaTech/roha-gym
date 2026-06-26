@@ -5,20 +5,17 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
-use App\Models\User;
 
-class GymScope
+class EnsureAdmin
 {
+    /**
+     * Ensure the authenticated user is a platform admin.
+     */
     public function handle(Request $request, Closure $next): Response
     {
-        $gymRoute = $request->route('gym');
-        $gym = $gymRoute instanceof User ? $gymRoute : User::findOrFail($gymRoute);
-
-        if ($gym->id !== auth()->id()) {
+        if ($request->user()?->role !== 'admin') {
             abort(403);
         }
-
-        $request->gym = $gym;
 
         return $next($request);
     }

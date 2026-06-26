@@ -30,6 +30,10 @@ class Amharic extends Lang {
             'unable_to_login_please_contact_administrator' => 'መግባት አልተቻለም፣ እባክዎ አስተዳዳሪውን ያነጋግሩ',
             'account_inactive' => 'መለያዎ ንቁ አይደለም። እባክዎ አስተዳዳሪውን ያነጋግሩ።',
 
+            // Subscriptions
+            'subscription_recorded' => 'ክፍያ በተሳካ ሁኔታ ተመዝግቧል',
+            'subscription_deleted'  => 'የክፍያ መዝገብ ተሰርዟል',
+
                         // Layouts
             'adminLayoutOverline' => 'የሲስተም አስተዳዳሪ',
             'adminLayoutTitle' => 'የአስተዳዳሪ ዳሽቦርድ',

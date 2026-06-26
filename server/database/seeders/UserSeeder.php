@@ -8,31 +8,43 @@ use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        $users = [
+        // Platform super-admin
+        User::updateOrCreate(
+            ['phone' => '0911111111'],
             [
-                'name' => 'Admin',
-                'phone' => '0911111111',
+                'name'     => 'Admin',
+                'phone'    => '0911111111',
                 'password' => Hash::make('12345678'),
-                'status' => USER_STATUS_ACTIVE,
-            ],
-            [
-                'name' => 'Active User',
-                'phone' => '0912345678',
-                'password' => Hash::make('12345678'),
-                'status' => USER_STATUS_ACTIVE,
-            ],
-        ];
+                'status'   => USER_STATUS_ACTIVE,
+                'role'     => 'admin',
+            ]
+        );
 
-        foreach ($users as $user) {
-            User::updateOrCreate(
-                ['phone' => $user['phone']],
-                $user
-            );
-        }
+        // Gym owner accounts
+        User::updateOrCreate(
+            ['phone' => '0912345678'],
+            [
+                'name'     => 'FitZone Gym',
+                'phone'    => '0912345678',
+                'password' => Hash::make('12345678'),
+                'status'   => USER_STATUS_ACTIVE,
+                'address'  => 'Bole, Addis Ababa',
+                'role'     => 'user',
+            ]
+        );
+
+        User::updateOrCreate(
+            ['phone' => '0913456789'],
+            [
+                'name'     => 'PowerHouse Gym',
+                'phone'    => '0913456789',
+                'password' => Hash::make('12345678'),
+                'status'   => USER_STATUS_ACTIVE,
+                'address'  => 'Piazza, Addis Ababa',
+                'role'     => 'user',
+            ]
+        );
     }
 }

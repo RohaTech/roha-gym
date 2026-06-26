@@ -3,16 +3,13 @@ import { computed } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import type { LucideIcon } from 'lucide-vue-next'
 import {
-  BarChart3,
   Building2,
   CalendarCheck,
   ChevronRight,
   CreditCard,
-  Crown,
   IdCard,
   LayoutDashboard,
   LogOut,
-  Settings,
   User,
   Users,
 } from 'lucide-vue-next'
@@ -73,7 +70,6 @@ const ownerNav: NavGroup[] = [
       },
       { labelKey: 'sidebarMembershipTypes', url: '/app/memberships', icon: IdCard },
       { labelKey: 'sidebarCheckIn', url: '/app/check-in', icon: CalendarCheck },
-      { labelKey: 'sidebarAnalytics', url: '/app/analytics', icon: BarChart3 },
     ],
   },
   {
@@ -96,28 +92,22 @@ const adminNav: NavGroup[] = [
           { labelKey: 'sidebarAddGym', url: '/admin/gyms/new' },
         ],
       },
-      { labelKey: 'sidebarAnalytics', url: '/admin/analytics', icon: BarChart3 },
       { labelKey: 'sidebarSubscriptions', url: '/admin/subscriptions', icon: CreditCard },
-      { labelKey: 'sidebarSystemSettings', url: '/admin/settings', icon: Settings },
     ],
-  },
-  {
-    labelKey: 'sidebarAccount',
-    items: [{ labelKey: 'sidebarAdminAccount', url: '/admin/account', icon: Crown }],
   },
 ]
 
 const navGroups = computed(() => (props.role === 'admin' ? adminNav : ownerNav))
 
-function matchesRoute(url: string) {
-  return route.path === url || route.path.startsWith(url + '/')
-}
-
 function isActive(item: NavItem) {
   if (item.items?.length) {
-    return item.items.some((child) => matchesRoute(child.url))
+    // Parent item: active if any child matches (exact or sub-path)
+    return item.items.some((child) =>
+      route.path === child.url || route.path.startsWith(child.url + '/'),
+    )
   }
-  return matchesRoute(item.url)
+  // Leaf item: only exact match
+  return route.path === item.url
 }
 
 function handleLinkClick() {

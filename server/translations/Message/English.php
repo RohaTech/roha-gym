@@ -52,6 +52,10 @@ class English extends Lang {
 
             // Gym Profile
             'gym_profile_updated' => 'Gym profile updated successfully',
+
+            // Subscriptions
+            'subscription_recorded' => 'Payment recorded successfully',
+            'subscription_deleted'  => 'Payment record deleted successfully',
         ];
     }
 }
