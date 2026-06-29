@@ -24,7 +24,7 @@ import {
 } from 'lucide-vue-next'
 
 const checkInStore = useCheckInStore()
-const { onDecode, onError, isOnCooldown, cameraError } = useQrScanner()
+const { onDecode, onError, isOnCooldown, cameraError, isPaused } = useQrScanner()
 const { code, submit, validationError, clearError } = useManualCheckIn()
 
 const activeTab = ref('qr')
@@ -93,7 +93,7 @@ function daysColor(days: number): string {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div class="relative rounded-2xl overflow-hidden aspect-video bg-surface-100 dark:bg-surface-950 border border-surface-200 dark:border-surface-800 flex items-center justify-center">
+              <div class="relative rounded-2xl overflow-hidden aspect-square sm:aspect-video bg-surface-100 dark:bg-surface-950 border border-surface-200 dark:border-surface-800 flex items-center justify-center">
                 
                 <div v-if="cameraError" class="text-center p-6 text-danger-500">
                   <CameraOff class="w-10 h-10 mx-auto mb-3 opacity-80" />
@@ -103,6 +103,7 @@ function daysColor(days: number): string {
                 
                 <QrcodeStream
                   v-else
+                  :paused="isPaused"
                   @detect="onDecode($event[0]?.rawValue || '')"
                   @error="onError"
                   class="w-full h-full object-cover"
