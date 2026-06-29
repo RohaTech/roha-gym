@@ -14,6 +14,9 @@ export function useCheckIn() {
       const response = await axiosInstance.post(`/gyms/${gymId}/check-in`, { identifier, method })
       return response.data as CheckInResult
     },
+    onMutate: () => {
+      checkInStore.status = 'pending'
+    },
     onSuccess: (data) => {
       checkInStore.setResult(data)
     },
